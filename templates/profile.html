@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Profile</title>
+
+</head>
+<body>
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Build Your Profile</h1>
+
+<form action="" method="POST">
+	Hackathon<br>
+	<input type="radio" name="hackathon" value="ht6">Hack the 6ix<br>
+	<input type="radio" name="hackathon" value="hackmty">HackMTY<br>
+	<input type="radio" name="hackathon" value="bytehacks">ByteHacks<br>
+	<input type="radio" name="hackathon" value="hackru">HackRU<br>
+	<br><br>
+	
+	Project Description <br>
+	<textarea type="text" name="projIdea" style="width: 300px;height: 75px" id="textbox" ></textarea>
+	<br><br>
+
+	Technologies<br> <!-- Checklist -->
+	<input type="checkbox" name="tech1" value="API">API<br>
+	<input type="checkbox" name="tech2" value="node">Node.js<br>
+	<input type="checkbox" name="tech3" value="angular">Angular.js<br>
+	<input type="checkbox" name="tech4" value="flask">Flask<br>
+	<input type="checkbox" name="tech5" value="django">Django<br>
+	<input type="checkbox" name="tech6" value="other">Other<br>
+	<br><br>
+
+	Interests <br> <!-- Checklist -->
+	<input type="checkbox" name="int1" value="hw">Hardware<br>
+	<input type="checkbox" name="int2" value="fintech">FinTech<br>
+	<input type="checkbox" name="int3" value="hc">Healthcare<br>
+	<input type="checkbox" name="int4" value="food">Food<br>
+	<input type="checkbox" name="int6" value="mnusic">Music<br>
+	<input type="checkbox" name="int7" value="other">Other<br>
+	<br><br>
+	
+
+	Languages <br> <!-- Checklist -->
+	<input type="checkbox" name="lang1" value="java">Java<br>
+	<input type="checkbox" name="lang2" value="python">Python<br>
+	<input type="checkbox" name="lang3" value="c++">C++<br>
+	<input type="checkbox" name="lang4" value="ruby">Ruby<br>
+	<input type="checkbox" name="lang5" value="js">JavaScript<br>
+	<input type="checkbox" name="lang6" value="html">HTML/CSS<br>
+	<input type="checkbox" name="lang7" value="other">Other<br>
+	<br><br>
+	
+	Hardware <br> <!-- Checklist -->
+	<input type="checkbox" name="hw1" value="arduino">Arduino<br>
+	<input type="checkbox" name="hw2" value="rp">Raspberry Pi<br>
+	<input type="checkbox" name="hw3" value="alexa">Alexa<br>
+	<input type="checkbox" name="hw4" value="oculus">Oculus<br>
+	<br><br>
+	
+	Experience Level <br> <!-- Radio -->
+	<input type="radio" name="exper" value="b">Beginner<br>
+	<input type="radio" name="exper" value="i">Intermediate<br>
+	<input type="radio" name="exper" value="a">Advanced<br>
+	<br><br>
+
+	Competing? <br> <!-- Radio -->
+	<input type="radio" name="comp" value="y">Yes<br>
+	<input type="radio" name="comp" value="n"> No<br>
+	<br><br>
+
+	GitHub Link <br> <!-- Text -->
+	<input type="text" name="gitLink" style="width: 300px"/>
+	<br><br>
+	
+	Resume Link <br> <!-- Text -->
+	<input type="text" name="resume" style="width: 300px"/>
+
+	<br><br>
+	<input type="submit">
+	<br><br>
+</form>
+
+{% endblock %}
+</body>
+</html>

@@ -1,0 +1,24 @@
+<html>
+	<head>
+		{% if title %}
+		<title>{{ title }} - Team Builder</title>
+		{% else %}
+		<title>Team Builder</title>
+		{% endif %}
+	</head>
+	<body>
+		<div>Team Builder |  
+			<a href="{{ url_for('index') }}">Home</a> ∙
+			{% if username %}
+			<a href="{{ url_for('profile') }}">Profile</a> ∙
+			Matches ∙
+			Messages ∙
+			<a href="{{ url_for('logout') }}">Logout</a>
+			{% else %}
+			<a href="{{ url_for('login') }}">Login</a> ∙
+			<a href="{{ url_for('register') }}">Register</a> 
+			{% endif %}
+		</div>
+			{% block content %}{% endblock %}
+	</body>
+</html>

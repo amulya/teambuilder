@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Team Builder</title>
+</head>
+<body>
+{% extends "base.html" %}
+
+{% block content %}
+	{% if username %}
+			<h1>Welcome, {{username}}!</h1>
+	{% else %}
+		<h1>Team Builder</h1>
+		<h2>Ready to find your dream team? Let's get started.</h2>
+		<h3><a href={{ url_for('login') }}>Log In</a></h3>
+		<h3><a href={{ url_for('register') }}>Register</a></h3>
+	{% endif %}
+{% endblock %}
+</body>
+</html>
