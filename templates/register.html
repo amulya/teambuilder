@@ -7,9 +7,11 @@
 
 <h1>Register</h1>
 <h3>Create a free account!</h3>
+
 {% for error in error%}
 	<p style="color:red">{{ error }}</p>
 {% endfor %}
+
 <form method="POST">
 	Username <input type="text" name="username">
 	<br>

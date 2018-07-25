@@ -7,6 +7,15 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+      <h3 style="color:green">{{ messages[0] }}</h3>
+    </ul>
+  {% endif %}
+{% endwith %}
+
 	{% if username %}
 			<h1>Welcome, {{username}}!</h1>
 	{% else %}

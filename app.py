@@ -4,7 +4,6 @@ from flask import Flask, render_template, request, url_for, session, redirect, e
 from flask_mysqldb import MySQL
 from flask_sqlalchemy import SQLAlchemy
 import yaml
-from forms import RegisterForm
 
 app = Flask(__name__)
 
@@ -16,9 +15,6 @@ app.config['MYSQL_PASSWORD'] = db['mysql_password']
 app.config['MYSQL_DB'] = db['mysql_db']
 
 mysql = MySQL(app)
-
-#login_manager = LoginManager()
-#login_manager.init_app(app)
 
 @app.route('/', methods = ["GET"]) 
 def index():
@@ -33,7 +29,6 @@ def login():
 	error = None
 	if 'username' in session:
 		return redirect(url_for('index'))
-	#form = LoginForm()
 	if request.method == 'POST':
 		username_form  = request.form['username']
 		password_form  = request.form['password']
@@ -55,8 +50,6 @@ def login():
 
 @app.route('/register', methods = ["GET","POST"]) 
 def register():
-	#form = RegisterForm()
-	#justReg = False
 	error = []
 	isIssue = False
 	if request.method == 'POST':
@@ -101,74 +94,136 @@ def logout():
 	session.pop('username', None)
 	return redirect(url_for('index'))
 
-@app.route('/profile')
+@app.route('/profile', methods = ["GET","POST"])
 def profile():
+	isError = False
+	error = []
+	#tech=None
 	if 'username' not in session:
 		return render_template('index.html')
+	username_session = escape(session['username']).capitalize()
+	username = escape(session['username'])
+	
 	if request.method == 'POST':
-		isError = False
-		error = None
-		username_session = escape(session['username']).capitalize()
 		
-
 		# Save form info
-			# can be any number of submissions
-			# limit # of selections to 3 per category?
 
-			# easy fields 
+		# easy fields 
 		projIdea_form  = request.form['projIdea']
-		compLevel_form = request.form['compLevel']
+		compLevel_form = request.form['comp']
 		gitLink_form = request.form['gitLink'] # unique
 		resume_form = request.form['resume'] # unique
 
-			# more selections hereeeeeeeeeeeeee
+		#many to many relationships
 		hackathon_form  = request.form['hackathon']
-
+		#arrays
+		tech = request.form.getlist('tech[]')
+		langs = request.form.getlist('langs[]')
+		ints = request.form.getlist('interests[]')
+		hw = request.form.getlist('hw[]')
 
 		# Error handling (making sure unique entries are actually unique)
 		cur = mysql.connection.cursor()
 
-			# unique fields: git + resume links
-				#NOT DONE
-				# first check if links are duplicates
-				# then update row
-		cur.execute("SELECT * FROM user WHERE gitLink=%s", (gitLink_form))
-		if cur.fetchone() is not None:
-			error = 'GitHub link not unique.'
+		cur.execute("SELECT userID from user WHERE username=%s", (username))
+		userID = cur.fetchone(['userID'])
+
+
+		# HACKATHON field
+			# add hackathon (many to many relationship; insert in usertohackathon table)
+			# select statements in user and hackathon tables first
+
+		# hackathon
+		if len(hackathon_form) == 0:
+			error.append('Please select a hackathon.')
 			isError = True
 		else:
-			cur.execute("UPDATE user SET gitLink=%s WHERE username=%s", (gitLink_form, username)) 
-			mysql.connection.commit()
+			cur.execute("SELECT hackathonID from hackathons WHERE hackathon=%s", (hackathon_form))
+			hackathonID = cur.fetchone(['hackathonID'])
+			cur.execute("INSERT INTO usertohackathon VALUES(%d, %d)", (userID, hackathonID))
 
-		cur.execute("SELECT * FROM user WHERE resume=%s", (resume_form))
-		if cur.fetchone() is not None:
-			error = 'Resume link not unique.'
+
+		# multiselect fields
+			# cycle through, add each one as a row in many-to-many table
+
+		#technologies
+		if len(tech) == 0:
 			isError = True
+			error.append("Please select at least one technology.")
 		else:
-			cur.execute("UPDATE user SET resume=%s WHERE username=%s", (resume_form, username)) 
-			mysql.connection.commit()
+			for i in range(len(tech)):
+				cur.execute("SELECT techID from tech WHERE tech=%s", (tech[i]))
+				techID = cur.fetchone(['techID'])
+				cur.execute("INSERT INTO usertotech VALUES(%d, %d)", (userID, techID))
 
-	if isError:
-		render_template('profile.html', username=username_session, error = error)
+		# languages
+		if len(langs) == 0:
+			isError = True
+			error.append("Please select at least one language.")
+		else:
+			for i in range(len(langs)):
+				cur.execute("SELECT langID from langs WHERE lang=%s", (langs[i]))
+				techID = cur.fetchone(['langID'])
+				cur.execute("INSERT INTO usertolangs VALUES(%d, %d)", (userID, langID))
 
-		#UPDATE database
-		cur.execute("UPDATE user SET projIdea = %s, compLevel = %s WHERE username=%s", (projIdea_form, compLevel_form, username)) 
+		# interests
+		if len(ints) == 0:
+			isError = True
+			error.append("Please select at least one interest.")
+		else:
+			for i in range(len(ints)):
+				cur.execute("SELECT intID from interests WHERE interest=%s", (ints[i]))
+				techID = cur.fetchone(['intID'])
+				cur.execute("INSERT INTO usertointerests VALUES(%d, %d)", (userID, intID))
+
+		# hardware
+		if len(hw) == 0:
+			isError = True
+			error.append("Please select at least one hardware.")
+		else:
+			for i in range(len(hw)):
+				cur.execute("SELECT hwID from hw WHERE hw=%s", (hw[i]))
+				techID = cur.fetchone(['hwID'])
+				cur.execute("INSERT INTO usertohw VALUES(%d, %d)", (userID, hwID))
+
+
+
+		# links
+		if(len(gitLink_form) > 0):
+			cur.execute("SELECT * FROM user WHERE gitLink=%s", (gitLink_form))
+			if cur.fetchone() is not None:
+				error.append('GitHub link not unique.')
+				isError = True
+			else:
+				cur.execute("UPDATE user SET gitLink=%s WHERE username=%s", (gitLink_form, username)) 
+				mysql.connection.commit()
+
+		if(len(resume_form) > 0):
+			cur.execute("SELECT * FROM user WHERE resume=%s", (resume_form))
+			if cur.fetchone() is not None:
+				error.append('Resume link not unique.')
+				isError = True
+			else:
+				cur.execute("UPDATE user SET resume=%s WHERE username=%s", (resume_form, username)) 
+				mysql.connection.commit()
+
+
+		# if error(s), render template early
+		if isError: 
+			render_template('profile.html', error = error)
+
+
+		#Update user table w/ links
+		cur.execute("UPDATE user SET projIdea = %s, comp = %s WHERE username=%s", (projIdea_form, compLevel_form, username)) 
 		mysql.connection.commit()
 
 
-	# HACKATHON field
-	# add hackathon (many to many relationship; insert in usertohackathon table)
-		# select statements in user and hackathon tables first?
-
-	# deal with multiselect fields
-		# save as array/list
-		# cycle through, add each one as a row in many-to-many table
-
+		flash('Thanks for filling out your profile! Click here to find your matches.')
+		return redirect(url_for('index', username=username_session))
 	return render_template('profile.html', username=username_session)
 
 app.secret_key = 'MVB79L'
 
 if __name__ == '__main__':
-	
 	app.config['SESSION_TYPE'] = 'filesystem'
 	app.run(debug=True)
