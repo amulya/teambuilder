@@ -33,7 +33,7 @@ def login():
 		username_form  = request.form['username']
 		password_form  = request.form['password']
 		cur = mysql.connection.cursor()
-		cur.execute("SELECT COUNT(1) FROM user WHERE username = %s;", [username_form]) # CHECKS IF USERNAME EXSIST
+		cur.execute("SELECT COUNT(1) FROM user WHERE username = %s;", [username_form]) # CHECKS IF USERNAME EXISTS
 		mysql.connection.commit()
 		if cur.fetchone()[0]:
 			cur.execute("SELECT password FROM user WHERE username = %s;", [username_form]) # FETCH THE PASSWORD
@@ -41,11 +41,13 @@ def login():
 			for row in cur.fetchall():
 				if password_form== row[0]:
 					session['username'] = request.form['username']
+					cur.close()
 					return redirect(url_for('index'))
 				else:
 					error = "Wrong password"
 		else:
 			error = "Username not found"
+		cur.close()
 	return render_template('login.html', error=error)
 
 @app.route('/register', methods = ["GET","POST"]) 
@@ -82,7 +84,7 @@ def register():
 			return render_template('register.html', error = error)
 
 		# if no errors, add to database
-		cur.execute("INSERT INTO user(email, username, password) VALUES(%s, %s, %s)", (email, username, password))
+		cur.execute("INSERT INTO user(email, username, password) VALUES(%s, %s, %s)", [email, username, password])
 		mysql.connection.commit()
 		cur.close() 
 		flash('Congrats! You are now a registered hacker.')
@@ -106,11 +108,10 @@ def profile():
 	
 	if request.method == 'POST':
 		
-		# Save form info
-
-		# easy fields 
+		# simple fields 
 		projIdea_form  = request.form['projIdea']
 		compLevel_form = request.form['comp']
+		exper_form = request.form['exper']
 		gitLink_form = request.form['gitLink'] # unique
 		resume_form = request.form['resume'] # unique
 
@@ -118,105 +119,106 @@ def profile():
 		hackathon_form  = request.form['hackathon']
 		#arrays
 		tech = request.form.getlist('tech[]')
-		langs = request.form.getlist('langs[]')
+		languages = request.form.getlist('languages[]')
 		ints = request.form.getlist('interests[]')
-		hw = request.form.getlist('hw[]')
+		hardware = request.form.getlist('hardware[]')
 
-		# Error handling (making sure unique entries are actually unique)
 		cur = mysql.connection.cursor()
-
-		cur.execute("SELECT userID from user WHERE username=%s", (username))
-		userID = cur.fetchone(['userID'])
-
-
-		# HACKATHON field
-			# add hackathon (many to many relationship; insert in usertohackathon table)
-			# select statements in user and hackathon tables first
+		cur.execute("SELECT userID FROM user WHERE username=%s", [username])
+		userID = cur.fetchone()[0]
 
 		# hackathon
-		if len(hackathon_form) == 0:
+		if hackathon_form is None:
 			error.append('Please select a hackathon.')
 			isError = True
 		else:
-			cur.execute("SELECT hackathonID from hackathons WHERE hackathon=%s", (hackathon_form))
-			hackathonID = cur.fetchone(['hackathonID'])
-			cur.execute("INSERT INTO usertohackathon VALUES(%d, %d)", (userID, hackathonID))
+			cur.execute("SELECT hackathonID FROM hackathons WHERE hackathon=%s", [hackathon_form])
+			hackathonID = cur.fetchone()[0]
+			cur.execute("INSERT INTO usertohackathon VALUES(%s, %s)", [userID, hackathonID])
 
+		# multiselect fields: cycle through, add each one as a row in many-to-many table
 
-		# multiselect fields
-			# cycle through, add each one as a row in many-to-many table
-
-		#technologies
+		#technologies 
 		if len(tech) == 0:
 			isError = True
 			error.append("Please select at least one technology.")
 		else:
-			for i in range(len(tech)):
-				cur.execute("SELECT techID from tech WHERE tech=%s", (tech[i]))
-				techID = cur.fetchone(['techID'])
-				cur.execute("INSERT INTO usertotech VALUES(%d, %d)", (userID, techID))
+			for i in range(0, len(tech)):
+				cur.execute("SELECT techID FROM tech WHERE tech=%s", [tech[i]])
+				techID = cur.fetchone()[0]
+				cur.execute("INSERT INTO usertotech VALUES(%s, %s)", [userID, techID])
 
-		# languages
-		if len(langs) == 0:
+		# languages 
+		if len(languages) == 0:
 			isError = True
 			error.append("Please select at least one language.")
 		else:
-			for i in range(len(langs)):
-				cur.execute("SELECT langID from langs WHERE lang=%s", (langs[i]))
-				techID = cur.fetchone(['langID'])
-				cur.execute("INSERT INTO usertolangs VALUES(%d, %d)", (userID, langID))
+			for i in range(0, len(languages)):
+				cur.execute("SELECT langID FROM langs WHERE lang=%s", [languages[i]])
+				langID = cur.fetchone()[0]
+				cur.execute("INSERT INTO usertolang VALUES(%s, %s)", [userID, langID])
 
-		# interests
+		# interests 
 		if len(ints) == 0:
 			isError = True
 			error.append("Please select at least one interest.")
 		else:
-			for i in range(len(ints)):
-				cur.execute("SELECT intID from interests WHERE interest=%s", (ints[i]))
-				techID = cur.fetchone(['intID'])
-				cur.execute("INSERT INTO usertointerests VALUES(%d, %d)", (userID, intID))
+			for i in range(0, len(ints)):
+				cur.execute("SELECT intID FROM interests WHERE interest=%s", [ints[i]])
+				intID = cur.fetchone()[0]
+				cur.execute("INSERT INTO usertointerests VALUES(%s, %s)", [userID, intID])
 
-		# hardware
-		if len(hw) == 0:
+
+		# hardware 
+		if len(hardware) == 0:
 			isError = True
 			error.append("Please select at least one hardware.")
 		else:
-			for i in range(len(hw)):
-				cur.execute("SELECT hwID from hw WHERE hw=%s", (hw[i]))
-				techID = cur.fetchone(['hwID'])
-				cur.execute("INSERT INTO usertohw VALUES(%d, %d)", (userID, hwID))
+			for i in range(0, len(hardware)):
+				cur.execute("SELECT hwID FROM hw WHERE hw=%s", [hardware[i]])
+				hwID = cur.fetchone()[0]
+				cur.execute("INSERT INTO usertohw VALUES(%s, %s)", [userID, hwID])
 
+		# radio options
+		if len(experLevel_form) == 0:
+			error.append('Please select an experience level.')
+			isError = True
+		else:
+			cur.execute("UPDATE user SET exper=%s WHERE username=%s", [exper_form, username]) 
+			mysql.connection.commit()
+
+
+		if len(compLevel_form) == 0:
+			error.append('Please select a competition level.')
+			isError = True
+		else:
+			cur.execute("UPDATE user SET comp=%s WHERE username=%s", [compLevel_form, username]) 
+			mysql.connection.commit()
 
 
 		# links
 		if(len(gitLink_form) > 0):
-			cur.execute("SELECT * FROM user WHERE gitLink=%s", (gitLink_form))
+			cur.execute("SELECT * FROM user WHERE gitLink=%s", [gitLink_form])
 			if cur.fetchone() is not None:
 				error.append('GitHub link not unique.')
 				isError = True
 			else:
-				cur.execute("UPDATE user SET gitLink=%s WHERE username=%s", (gitLink_form, username)) 
+				cur.execute("UPDATE user SET gitLink=%s WHERE username=%s", [gitLink_form, username]) 
 				mysql.connection.commit()
 
 		if(len(resume_form) > 0):
-			cur.execute("SELECT * FROM user WHERE resume=%s", (resume_form))
+			cur.execute("SELECT * FROM user WHERE resume=%s", [resume_form])
 			if cur.fetchone() is not None:
 				error.append('Resume link not unique.')
 				isError = True
 			else:
-				cur.execute("UPDATE user SET resume=%s WHERE username=%s", (resume_form, username)) 
+				cur.execute("UPDATE user SET resume=%s WHERE username=%s", [resume_form, username]) 
 				mysql.connection.commit()
 
 
 		# if error(s), render template early
 		if isError: 
 			render_template('profile.html', error = error)
-
-
-		#Update user table w/ links
-		cur.execute("UPDATE user SET projIdea = %s, comp = %s WHERE username=%s", (projIdea_form, compLevel_form, username)) 
-		mysql.connection.commit()
-
 
 		flash('Thanks for filling out your profile! Click here to find your matches.')
 		return redirect(url_for('index', username=username_session))
