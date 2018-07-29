@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Customize Your Preferences</title>
+
+</head>
+<body>
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Build Your Profile</h1>
+
+{% for error in error%}
+	<p style="color:red">{{ error }}</p>
+{% endfor %}
+
+<form action="" method="POST">
+	Hackathon<br>
+	<input type="radio" name="hackathon" value="ht6">Hack the 6ix<br>
+	<input type="radio" name="hackathon" value="hackmty">HackMTY<br>
+	<input type="radio" name="hackathon" value="bytehacks">ByteHacks<br>
+	<input type="radio" name="hackathon" value="hackru">HackRU<br>
+	<br><br>
+	
+	Project Description <br>
+	<textarea type="text" name="projIdea" style="width: 300px;height: 75px" id="textbox" ></textarea>
+	<br><br>
+
+	Technologies<br> <!-- Checklist -->
+	<input type="checkbox" name="tech[]" value="api">API<br>
+	<input type="checkbox" name="tech[]" value="node">Node.js<br>
+	<input type="checkbox" name="tech[]" value="angular">Angular.js<br>
+	<input type="checkbox" name="tech[]" value="flask">Flask<br>
+	<input type="checkbox" name="tech[]" value="django">Django<br>
+	<input type="checkbox" name="tech[]" value="other">Other<br>
+	<br><br>
+
+	Interests <br> <!-- Checklist -->
+	<input type="checkbox" name="interests[]" value="hardware">Hardware<br>
+	<input type="checkbox" name="interests[]" value="fintech">FinTech<br>
+	<input type="checkbox" name="interests[]" value="healthcare">Healthcare<br>
+	<input type="checkbox" name="interests[]" value="food">Food<br>
+	<input type="checkbox" name="interests[]" value="music">Music<br>
+	<input type="checkbox" name="interests[]" value="other">Other<br>
+	<br><br>
+	
+
+	Languages <br> <!-- Checklist -->
+	<input type="checkbox" name="languages[]" value="java">Java<br>
+	<input type="checkbox" name="languages[]" value="python">Python<br>
+	<input type="checkbox" name="languages[]" value="c++">C++<br>
+	<input type="checkbox" name="languages[]" value="ruby">Ruby<br>
+	<input type="checkbox" name="languages[]" value="javascript">JavaScript<br>
+	<input type="checkbox" name="languages[]" value="html/css">HTML/CSS<br>
+	<input type="checkbox" name="languages[]" value="other">Other<br>
+	<br><br>
+	
+	Hardware <br> <!-- Checklist -->
+	<input type="checkbox" name="hardware[]" value="arduino">Arduino<br>
+	<input type="checkbox" name="hardware[]" value="raspberry pi">Raspberry Pi<br>
+	<input type="checkbox" name="hardware[]" value="alexa">Alexa<br>
+	<input type="checkbox" name="hardware[]" value="oculus">Oculus<br>
+	<input type="checkbox" name="hardware[]" value="other">Other<br>
+	<br><br>
+	
+	Experience Level <br> <!-- Radio -->
+	<input type="radio" name="exper" value="b">Beginner<br>
+	<input type="radio" name="exper" value="i">Intermediate<br>
+	<input type="radio" name="exper" value="a">Advanced<br>
+	<br><br>
+
+	Competing? <br> <!-- Radio -->
+	<input type="radio" name="comp" value="yes">Yes<br>
+	<input type="radio" name="comp" value="no"> No<br>
+	<br><br>
+
+	GitHub Link <br> <!-- Text -->
+	<input type="text" name="gitLink" style="width: 300px"/>
+	<br><br>
+	
+	Resume Link <br> <!-- Text -->
+	<input type="text" name="resume" style="width: 300px"/>
+
+	<br><br>
+	<input type="submit">
+	<br><br>
+</form>
+
+
+
+
+{% endblock %}
+</body>
+</html>

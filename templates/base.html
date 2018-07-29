@@ -10,9 +10,12 @@
 		<div>Team Builder |  
 			<a href="{{ url_for('index') }}">Home</a> ∙
 			{% if username %}
-			<a href="{{ url_for('profile') }}">Profile</a> ∙
+			<a href="{{ url_for('prefs') }}">Customize Your Profile</a> ∙
 			Matches ∙
 			Messages ∙
+			{% if profilePage %}
+			<a href="{{ url_for('profile') }}">Your Profile</a> ∙
+			{% endif %}
 			<a href="{{ url_for('logout') }}">Logout</a>
 			{% else %}
 			<a href="{{ url_for('login') }}">Login</a> ∙

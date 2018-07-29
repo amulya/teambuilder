@@ -15,13 +15,13 @@ app.config['MYSQL_PASSWORD'] = db['mysql_password']
 app.config['MYSQL_DB'] = db['mysql_db']
 
 mysql = MySQL(app)
+profilePage = [[]]
 
 @app.route('/', methods = ["GET"]) 
 def index():
 	if 'username' in session:
 		username_session = escape(session['username']).capitalize()
 		return render_template('index.html', username=username_session)
-		#return redirect(url_for('profile'))
 	return render_template('index.html')
 
 @app.route('/login', methods = ["GET", "POST"]) 
@@ -96,10 +96,11 @@ def logout():
 	session.pop('username', None)
 	return redirect(url_for('index'))
 
-@app.route('/profile', methods = ["GET","POST"])
-def profile():
+@app.route('/preferences', methods = ["GET","POST"])
+def prefs():
 	isError = False
 	error = []
+	profilePage = [[]]
 	#tech=None
 	if 'username' not in session:
 		return render_template('index.html')
@@ -122,6 +123,17 @@ def profile():
 		languages = request.form.getlist('languages[]')
 		ints = request.form.getlist('interests[]')
 		hardware = request.form.getlist('hardware[]')
+
+		profilePage[0] = [hackathon_form]
+		profilePage[1] = [projIdea_form]
+		profilePage[2] = tech
+		profilePage[3] = interests
+		profilePage[4] = languages
+		profilePage[5] = hardware
+		profilePage[6] = [exper]
+		profilePage[7] = [compLevel_form]
+		profilePage[8] = [gitLink_form]
+		profilePage[9] = [resume_form]
 
 		cur = mysql.connection.cursor()
 		cur.execute("SELECT userID FROM user WHERE username=%s", [username])
@@ -218,12 +230,18 @@ def profile():
 
 		# if error(s), render template early
 		if isError: 
-			render_template('profile.html', error = error)
+			render_template('prefs.html', error = error)
 
 		flash('Thanks for filling out your profile! Click here to find your matches.')
-		return redirect(url_for('index', username=username_session))
-	return render_template('profile.html', username=username_session)
+		return render_template('profile.html', username=username_session, profilePage=profilePage)
+	return render_template('prefs.html', username=username_session)
 
+@app.route('/profile')
+def profile():
+	if len(profilePage) > 0:
+		render_template(url_for('profile', profilePage=profilePage))
+	render_template(url_for('profile'))
+	
 app.secret_key = 'MVB79L'
 
 if __name__ == '__main__':
