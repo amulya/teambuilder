@@ -8,70 +8,100 @@
 
 {% block content %}
 
-	<h1>Your Profile</h1>
+	<!-- <h1>Your Profile</h1> -->
 
-	<h1>{{ username }}</h1>
-
-	{% if profilePage %}
+	<h1>{{username}}</h1>
+		<h4>Changed your mind about something? <a href="{{url_for('update')}}">Click here to update your preferences.</a></h4>
 
 		<h2>Hackathon</h2>
 
-			{{ profilePage[0][0] }}
+			{{ hackathon }}
+
+		{% if projIdea %}
 
 		Project Description
 
-			{{ profilePage[1][0] }}
+			{{ projIdea }}
+
+		{% endif %}
+
+
+		{% if techList %}
 
 		<h2>Technologies</h2>
 
-			{% for i in profilePage[2] %}
+			{% for i in techList %}
 				<ul>
-					<li>{{ profilePage[2][i] }}</li>
+					<li>{{ i }}</li>
 				</ul>
 			{% endfor %}
+
+		{% endif %}
+
+
+		{% if intList %}
 
 		<h2>Interests</h2>
 
-			{% for i in profilePage[3] %}
+			{% for i in intList %}
 				<ul>
-					<li>{{ profilePage[3][i] }}</li>
+					<li>{{ i }}</li>
 				</ul>
 			{% endfor %}
+
+		{% endif %}
+
+
+		{% if langList %}
 
 		<h2>Languages</h2>
 
-			{% for i in profilePage[4] %}
+			{% for i in langList %}
 				<ul>
-					<li>{{ profilePage[4][i] }}</li>
+					<li>{{ i }}</li>
 				</ul>
 			{% endfor %}
+		{% endif %}
+
+		{% if hwList %}
 
 		<h2>Hardware</h2>
 
-			{% for i in profilePage[5] %}
+			{% for i in hwList %}
 				<ul>
-					<li>{{ profilePage[5][i] }}</li>
+					<li>{{ i }}</li>
 				</ul>
 			{% endfor %}
+		{% endif %}
+
+		{% if exper %}
 
 		<h2>Experience Level</h2>
 
-			{{ profilePage[6][0] }}
+			{{ exper }}
+		{% endif %}
+
+		{% if comp %}
 
 		<h2>Competing?</h2>
 
-			{{ profilePage[7][0] }}
+			{{ comp }}
+		{% endif %}
+
+		{% if gitLink %}
 
 		<h2>Github</h2>
 
-			{{ profilePage[8][0] }}
+			{{ gitLink }}
+		{% endif %}
+
+		{% if resume %}
 
 		<h2>Resume</h2>
 
-			{{ profilePage[9][0] }}
-
-	{% endif %}
-
+			{{ resume }}
+		{% endif %}
+<br><br><br><br>
 
 {% endblock %}
 </body>

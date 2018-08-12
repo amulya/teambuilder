@@ -3,9 +3,9 @@
 <head>
 	<title>Team Builder</title>
 </head>
-<body>
+<body style="background-color: #4286f4">
 {% extends "base.html" %}
-
+	
 {% block content %}
 
 {% with messages = get_flashed_messages() %}
@@ -19,10 +19,19 @@
 	{% if username %}
 			<h1>Welcome, {{username}}!</h1>
 	{% else %}
-		<h1>Team Builder</h1>
-		<h2>Ready to find your dream team? Let's get started.</h2>
-		<h3><a href={{ url_for('login') }}>Log In</a></h3>
-		<h3><a href={{ url_for('register') }}>Register</a></h3>
+	<div>
+		<br><br><br><br><br><br>
+		<div style="text-align: center">
+			<h1 style="color: white; text-shadow: 3px 3px #0761f2">Team Builder</h1>
+			<h2 style="color: white; text-shadow: 3px 3px #0761f2">Ready to find your dream team? Let's get started.</h2>
+
+			<a href={{ url_for('login') }}><button style="height:50px;width:100px"><h2>Log In</h2></button></a>
+			<br><br>
+			<a href={{ url_for('register') }}><button style="height:50px;width:100px"><h2>Register</h2></button></a>
+			<br><br><br>
+		</div>
+
+	</div>
 	{% endif %}
 {% endblock %}
 </body>

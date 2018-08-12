@@ -7,20 +7,18 @@
 		{% endif %}
 	</head>
 	<body>
-		<div>Team Builder |  
+		<div style="font-size: 19px">Team Builder |  
 			<a href="{{ url_for('index') }}">Home</a> ∙
 			{% if username %}
-			<a href="{{ url_for('prefs') }}">Customize Your Profile</a> ∙
-			Matches ∙
+			<a href="{{ url_for('prefs') }}">Your Profile</a> ∙
+			<a href="{{ url_for('matches') }}">Matches</a> ∙
 			Messages ∙
-			{% if profilePage %}
-			<a href="{{ url_for('profile') }}">Your Profile</a> ∙
-			{% endif %}
 			<a href="{{ url_for('logout') }}">Logout</a>
 			{% else %}
 			<a href="{{ url_for('login') }}">Login</a> ∙
 			<a href="{{ url_for('register') }}">Register</a> 
 			{% endif %}
+		<hr>
 		</div>
 			{% block content %}{% endblock %}
 	</body>
