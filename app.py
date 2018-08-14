@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, url_for, session, redirect, escape, flash
-#from hashlib import md5
-#from flask.sessions import Session
+from passlib.hash import sha256_crypt
 from flask_mysqldb import MySQL
 from flask_sqlalchemy import SQLAlchemy
 import yaml
@@ -38,7 +37,7 @@ def login():
 			cur.execute("SELECT password FROM user WHERE username = %s;", [username_form]) # FETCH THE PASSWORD
 			mysql.connection.commit()
 			for row in cur.fetchall():
-				if password_form== row[0]:
+				if sha256_crypt.verify(password_form, row[0]):
 					session['username'] = request.form['username']
 					cur.close()
 					return redirect(url_for('index'))
@@ -83,7 +82,7 @@ def register():
 			return render_template('register.html', error = error)
 
 		# if no errors, add to database
-		cur.execute("INSERT INTO user(email, username, password) VALUES(%s, %s, %s)", [email, username, password])
+		cur.execute("INSERT INTO user(email, username, password) VALUES(%s, %s, %s)", [email, username, sha256_crypt.encrypt(password)])
 		mysql.connection.commit()
 		cur.close() 
 		flash('Congrats! You are now a registered hacker.')
@@ -118,11 +117,11 @@ def prefs():
 	if request.method == 'POST':
 		
 		# simple fields 
-		projIdea_form  = request.form['projIdea']
-		compLevel_form = request.form['comp']
-		exper_form = request.form['exper']
-		gitLink_form = request.form['gitLink'] # unique
-		resume_form = request.form['resume'] # unique
+		projIdea_form  = request.form.get('projIdea', None)
+		compLevel_form = request.form.get('comp', None)
+		exper_form = request.form.get('exper', None)
+		gitLink_form = request.form.get('gitLink', None) # unique
+		resume_form = request.form.get('resume', None) # unique
 
 		#many to many relationships
 		hackathon_form  = request.form['hackathon']
@@ -172,20 +171,22 @@ def prefs():
 				hwID = cur.fetchone()[0]
 				cur.execute("INSERT INTO usertohw VALUES(%s, %s)", [userID, hwID])
 
+		if projIdea_form is not None:
+			cur.execute("UPDATE user SET projIdea=%s WHERE username=%s", [projIdea_form, username]) 
+			mysql.connection.commit()
 
 		# radio options
-			# Why update statements???????
-		if len(exper_form) != 0:
+		if exper_form is not None:
 			cur.execute("UPDATE user SET exper=%s WHERE username=%s", [exper_form, username]) 
 			mysql.connection.commit()
 
-		if len(compLevel_form) != 0:
+		if compLevel_form is not None:
 			cur.execute("UPDATE user SET comp=%s WHERE username=%s", [compLevel_form, username]) 
 			mysql.connection.commit()
 
 
 		# links
-		if(len(gitLink_form) > 0):
+		if gitLink_form is not None:
 			cur.execute("SELECT * FROM user WHERE gitLink=%s", [gitLink_form])
 			if cur.fetchone() is not None:
 				error.append('GitHub link not unique.')
@@ -194,7 +195,7 @@ def prefs():
 				cur.execute("UPDATE user SET gitLink=%s WHERE username=%s", [gitLink_form, username]) 
 				mysql.connection.commit()
 
-		if(len(resume_form) > 0):
+		if resume_form is not None:
 			cur.execute("SELECT * FROM user WHERE resume=%s", [resume_form])
 			if cur.fetchone() is not None:
 				error.append('Resume link not unique.')
@@ -316,7 +317,7 @@ def matches():
 
 	# hackathon
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
-	hID = cur.fetchone()
+	hID = cur.fetchone()[0]
 
 	if hID is None: # return early if no profile
 		return render_template('nomatches.html', username=username)

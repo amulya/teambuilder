@@ -16,7 +16,7 @@
 	<p style="color:red">{{ error }}</p>
 {% endfor %}
 
-<form action="" method="POST">
+<form action="" id="prefs" method="POST">
 	Hackathon<br>
 	<input type="radio" name="hackathon" value="Hack the 6ix" required>Hack the 6ix<br>
 	<input type="radio" name="hackathon" value="HackMTY">HackMTY<br>
@@ -24,8 +24,8 @@
 	<input type="radio" name="hackathon" value="HackRU">HackRU<br>
 	<br><br>
 	
-	Project Description <br> <!-- fix this; currently not submitting a response -->
-	<input type="text" name="projIdea" value="projIdea" style="width: 300px;height: 75px" id="textbox"></input>
+	Project Description (Max length: 50 characters) <br>
+	<textarea name="projIdea" style="width: 300px;height: 75px" form="prefs" method="post" maxlength="50"></textarea>
 	<br><br>
 
 	Technologies<br> <!-- Checklist -->
@@ -77,19 +77,16 @@
 	<br><br>
 
 	GitHub Link <br> <!-- Text -->
-	<input type="text" name="gitLink" style="width: 300px"/>
+	<input type="url" pattern="https?://github.+" name="gitLink" style="width: 300px"/>
 	<br><br>
 	
 	Resume Link <br> <!-- Text -->
-	<input type="text" name="resume" style="width: 300px"/>
+	<input type="url" name="resume" style="width: 300px"/>
 
 	<br><br>
 	<input type="submit">
 	<br><br>
 </form>
-
-
-
 
 {% endblock %}
 </body>
