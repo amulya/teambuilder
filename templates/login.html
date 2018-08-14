@@ -5,8 +5,16 @@
 </head>
 <body>
 
+{% extends "base.html" %}
+	
+{% block content %}
+
+<div style="text-align: center">
+<br><br><br><br><br><br><br>
+
 <h1>Log in</h1>
-<h4><a href={{ url_for('register') }}>New user? Register here!</a></h4>
+<h3><a href={{ url_for('register') }}>New user? Register here!</a></h3>
+
 {% if error %}
 	<p style="color:red">{{ error }}</p>
 {% endif %}
@@ -19,16 +27,20 @@
   {% endif %}
 {% endwith %}
 
-<form method="POST">
-	Username
-	<input type="text" name="username" required>
-	<br>
-
-	Password
-	<input type="password" name="password" required>
-	<br>
-	<input type="submit">
-</form>
+<div style="font-size: 22px">
+	<form method="POST">
+		Username
+		<input type="text" name="username" required>
+		<br>
+		Password
+		<input type="password" name="password" required>
+		<br><br>
+		<!-- <input type="submit" style="font-size: 20px"> -->
+		<button type="submit" style="font-size: 18px; width:80px;height:40px;text-align: center;vertical-align: center">Submit</button>
+	</form>
+</div>
+</div>
+{% endblock %}
 
 </body>
 </html>

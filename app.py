@@ -310,19 +310,24 @@ def matches():
 
 	cur = mysql.connection.cursor()
 
+	# userID
+	cur.execute("SELECT userID FROM user WHERE username=%s", [username])
+	userID = cur.fetchone()[0] 
+
 	# hackathon
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
-	hID = cur.fetchone()[0]
-	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
-	hackathon = cur.fetchone()[0]
+	hID = cur.fetchone()
 
-	if hackathon is None: # return early if no profile
-		return render_template('nomatches.html', hackathon=hackathon)
+	if hID is None: # return early if no profile
+		return render_template('nomatches.html', username=username)
 
 	# Generating matches
 
+	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
+	hackathon = cur.fetchone()[0]
+
 	# is this format correct?
-	cur.execute("SELECT * FROM user WHERE userID IN (SELECT * FROM usertohackathon WHERE hackathon=%s)", [hackathon]) # select users at the same hackathon
+	cur.execute("SELECT * FROM user WHERE userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [hID]) # select users at the same hackathon
 
 	return render_template('matches.html', username=username)
 	

@@ -17,13 +17,16 @@
 {% endwith %}
 
 	{% if username %}
-			<h1>Welcome, {{username}}!</h1>
+			<div style="text-align: center; color:white; text-shadow: #0856d3 3px 3px; font-size: 30px">
+				<br>
+				<h1>Welcome, {{username}}!</h1>
+			</div>
 	{% else %}
 	<div>
 		<br><br><br><br><br><br>
 		<div style="text-align: center">
-			<h1 style="color: white; text-shadow: 3px 3px #0761f2">Team Builder</h1>
-			<h2 style="color: white; text-shadow: 3px 3px #0761f2">Ready to find your dream team? Let's get started.</h2>
+			<h1 style="color: white; text-shadow: 4px 4px #0761f2;font-size: 50px">Team Builder</h1>
+			<h2 style="color: white; text-shadow: 3px 3px #0761f2;font-size: 28px">Ready to find your dream team? Let's get started.</h2>
 
 			<a href={{ url_for('login') }}><button style="height:50px;width:100px"><h2>Log In</h2></button></a>
 			<br><br>
