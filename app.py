@@ -316,6 +316,11 @@ def matches():
 	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
 	hackathon = cur.fetchone()[0]
 
+	if hackathon is None: # return early if no profile
+		return render_template('nomatches.html', hackathon=hackathon)
+
+	# Generating matches
+
 	# is this format correct?
 	cur.execute("SELECT * FROM user WHERE userID IN (SELECT * FROM usertohackathon WHERE hackathon=%s)", [hackathon]) # select users at the same hackathon
 
