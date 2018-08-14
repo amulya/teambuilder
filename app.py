@@ -112,7 +112,7 @@ def prefs():
 	cur.execute("SELECT userID FROM user WHERE username=%s", [username])
 	userID = cur.fetchone()[0]
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
-	if cur.fetchone()[0] is not None:
+	if cur.fetchone() is not None:
 		return redirect(url_for('profile'))
 
 	if request.method == 'POST':
@@ -211,7 +211,7 @@ def prefs():
 		# fix this message?
 		flash('Thanks for filling out your profile! Scroll down to explore your matches.')
 		
-		return redirect(url_for('profile'))
+		return redirect(url_for('matches'))
 	return render_template('prefs.html', username=username_session)
 
 @app.route('/profile')
@@ -307,6 +307,18 @@ def update():
 @app.route('/matches')
 def matches():
 	username = escape(session['username'])
+
+	cur = mysql.connection.cursor()
+
+	# hackathon
+	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
+	hID = cur.fetchone()[0]
+	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
+	hackathon = cur.fetchone()[0]
+
+	# is this format correct?
+	cur.execute("SELECT * FROM user WHERE userID IN (SELECT * FROM usertohackathon WHERE hackathon=%s)", [hackathon]) # select users at the same hackathon
+
 	return render_template('matches.html', username=username)
 	
 app.secret_key = 'MVB79L'
