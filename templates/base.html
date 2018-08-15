@@ -10,9 +10,14 @@
 		<div style="font-size: 19px">Team Builder |  
 			<a href="{{ url_for('index') }}">Home</a> ∙
 			{% if username %}
-			<a href="{{ url_for('prefs') }}">Your Profile</a> ∙
-			<a href="{{ url_for('matches') }}">Matches</a> ∙
+			{% if profile %}
+			<a href="{{ url_for('profile') }}">Your Profile</a> ∙
+			<a href="{{ url_for('matches') }}">Your Matches</a> ∙
 			Messages ∙
+			{% else %}
+			<a href="{{ url_for('prefs') }}">Customize Your Profile</a> ∙
+			{% endif %}
+			
 			<a href="{{ url_for('logout') }}">Logout</a>
 			{% else %}
 			<a href="{{ url_for('login') }}">Login</a> ∙

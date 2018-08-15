@@ -16,14 +16,23 @@
   {% endif %}
 {% endwith %}
 
+{% if message %}
+	<h1>{{ message }}</h1>
+{% else %}
 <h1>Here are your matches, {{ username }}!</h1>
 <div style="font-size: 32px">
-<h4 style="font-size: 20px">Notezzzzz</h4>
-<ul>
-	<li>If user has not filled out form yet, don't want this page to show up tbh</li>
-	<li>For now, before form is filled out, just have link to form + 'fill out your prefs to get your matches'</li>
-</ul>
+
+<table border = 1>
+{% for match in matches %}
+	<tr>
+		<td>User: <a href={{ url_for('profile', username = match[2]) }}><strong>{{ match[2] }}</strong></a></td>
+		<td>Email: {{ match[1] }}</td>
+	{% endfor %}
+	</tr>
+</table>
+
 </div>
+{% endif %}
 
 {% endblock %}
 </body>

@@ -15,11 +15,20 @@ app.config['MYSQL_DB'] = db['mysql_db']
 
 mysql = MySQL(app)
 
+profile = True # if profile was filled out
+
 @app.route('/', methods = ["GET"]) 
 def index():
 	if 'username' in session:
-		username_session = escape(session['username']).capitalize()
-		return render_template('index.html', username=username_session)
+		username = escape(session['username'])
+		# check if user filled out profile + has matches
+		cur = mysql.connection.cursor()
+		cur.execute("SELECT userID FROM user WHERE username=%s", [username])
+		userID = cur.fetchone()[0]
+		cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
+		if cur.fetchone() is not None:
+			return render_template('index.html', username=username, profile=profile)
+		return render_template('index.html', username=username)
 	return render_template('index.html')
 
 @app.route('/login', methods = ["GET", "POST"]) 
@@ -101,18 +110,19 @@ def prefs():
 	profilePage = [[]]
 	#tech=None
 
+	# redirect to home page if no one is logged in
 	if 'username' not in session:
 		return render_template('index.html')
-	username_session = escape(session['username']).capitalize()
+	username_session = escape(session['username'])
 	username = escape(session['username'])
 
-	# Rendering profile page (if form was already filled out)
+	# Render profile page if form was already filled out
 	cur = mysql.connection.cursor()
 	cur.execute("SELECT userID FROM user WHERE username=%s", [username])
 	userID = cur.fetchone()[0]
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
 	if cur.fetchone() is not None:
-		return redirect(url_for('profile'))
+		return redirect(url_for('profile', profile=profile))
 
 	if request.method == 'POST':
 		
@@ -215,10 +225,15 @@ def prefs():
 		return redirect(url_for('matches'))
 	return render_template('prefs.html', username=username_session)
 
-@app.route('/profile')
-def profile():
+@app.route('/profile', defaults={'username': None})
+@app.route('/profile/<username>')
+def profile(username):
 	cur = mysql.connection.cursor()
-	username = escape(session['username'])
+	profile=True # if profile was filled out
+	username_session = escape(session['username'])
+
+	if username is None:
+		username = escape(session['username'])
 
 	# use select statements, send all vars to template
 
@@ -297,18 +312,24 @@ def profile():
 	cur.execute("SELECT resume FROM user WHERE username=%s", [username])
 	resume = cur.fetchone()[0]
 
-	return render_template('profile.html', username=username.capitalize(), hackathon=hackathon, projIdea=projIdea, 
+	#email
+	cur.execute("SELECT email FROM user WHERE username=%s", [username])
+	email = cur.fetchone()[0]
+
+	return render_template('profile.html', profile=profile, email=email, username_session=username_session, username=username, hackathon=hackathon, projIdea=projIdea, 
 		techList=techList, intList=intList, langList=langList, hwList=hwList, exper=exper, comp=comp, gitLink=gitLink, resume=resume)
 	
 @app.route('/update')
 def update():
 	username = escape(session['username'])
-	return render_template('update.html', username=username)
+	return render_template('update.html', username=username, profile=profile)
 	
 @app.route('/matches')
 def matches():
+	message = None
+	matches=None
 	username = escape(session['username'])
-
+	profile=True #if profile was filled out
 	cur = mysql.connection.cursor()
 
 	# userID
@@ -317,7 +338,7 @@ def matches():
 
 	# hackathon
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
-	hID = cur.fetchone()[0]
+	hID = cur.fetchone()
 
 	if hID is None: # return early if no profile
 		return render_template('nomatches.html', username=username)
@@ -327,11 +348,17 @@ def matches():
 	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
 	hackathon = cur.fetchone()[0]
 
-	# is this format correct?
-	cur.execute("SELECT * FROM user WHERE userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [hID]) # select users at the same hackathon
+	# select users at the same hackathon
+		# is this format correct?
 
-	return render_template('matches.html', username=username)
-	
+	numRows = cur.execute("SELECT * FROM user WHERE userID !=%s AND userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [userID, hID]) 
+	if numRows > 0:
+		matches = cur.fetchall()
+	else:
+		message = "Sorry, you have no matches at your hackathon."
+
+	return render_template('matches.html', profile=profile, username=username, message=message, matches=matches)
+
 app.secret_key = 'MVB79L'
 
 if __name__ == '__main__':
