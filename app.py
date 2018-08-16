@@ -237,18 +237,21 @@ def profile(username):
 
 	# use select statements, send all vars to template
 
-	cur.execute("SELECT userID FROM user WHERE username=%s", [username])
+	# cols in user table (one to one relationships)
+	cur.execute("SELECT userID, projIdea, exper, comp, gitLink, resume, email FROM user WHERE username=%s", [username])
 	userID = cur.fetchone()[0] # need for many-to-many relationships
+	projIdea = cur.fetchone()[1] # project idea
+	exper = cur.fetchone()[2] # experience level
+	comp = cur.fetchone()[3] # competition level
+	gitLink = cur.fetchone()[4] # github link
+	resume = cur.fetchone()[5] # resume link
+	email = cur.fetchone()[6] # email
 
 	# hackathon
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
 	hID = cur.fetchone()[0]
 	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
 	hackathon = cur.fetchone()[0]
-
-	# project idea
-	cur.execute("SELECT projIdea FROM user WHERE username=%s", [username])
-	projIdea = cur.fetchone()[0]
 
 	# multiselect items: have access to IDs. must select ID, then use it to find name of item in its own table
 
@@ -295,26 +298,6 @@ def profile(username):
 		hwList.append(hw)
 	if len(hwList) == 0:
 		hwList = None
-
-	# experience level
-	cur.execute("SELECT exper FROM user WHERE username=%s", [username])
-	exper = cur.fetchone()[0]
-
-	# competition level
-	cur.execute("SELECT comp FROM user WHERE username=%s", [username])
-	comp = cur.fetchone()[0]
-
-	# github link
-	cur.execute("SELECT gitLink FROM user WHERE username=%s", [username])
-	gitLink = cur.fetchone()[0]
-
-	# resume link
-	cur.execute("SELECT resume FROM user WHERE username=%s", [username])
-	resume = cur.fetchone()[0]
-
-	#email
-	cur.execute("SELECT email FROM user WHERE username=%s", [username])
-	email = cur.fetchone()[0]
 
 	return render_template('profile.html', profile=profile, email=email, username_session=username_session, username=username, hackathon=hackathon, projIdea=projIdea, 
 		techList=techList, intList=intList, langList=langList, hwList=hwList, exper=exper, comp=comp, gitLink=gitLink, resume=resume)
