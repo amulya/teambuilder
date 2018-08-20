@@ -107,8 +107,6 @@ def logout():
 def prefs():
 	isError = False
 	error = []
-	profilePage = [[]]
-	#tech=None
 
 	# redirect to home page if no one is logged in
 	if 'username' not in session:
@@ -304,9 +302,47 @@ def profile(username):
 	return render_template('profile.html', profile=profile, email=email, username_session=username_session, username=username, hackathon=hackathon, projIdea=projIdea, 
 		techList=techList, intList=intList, langList=langList, hwList=hwList, exper=exper, comp=comp, gitLink=gitLink, resume=resume)
 	
-@app.route('/update')
+@app.route('/update', methods=["GET", "POST"])
 def update():
+	# redirect to home page if no one is logged in
+	if 'username' not in session:
+		return render_template('index.html')
+
+	isError = False
+	error = []
+	
+	username_session = escape(session['username'])
 	username = escape(session['username'])
+
+	if request.method == 'POST':
+		
+		# simple fields 
+		projIdea_form  = request.form.get('projIdea', None)
+		compLevel_form = request.form.get('comp', None)
+		exper_form = request.form.get('exper', None)
+		gitLink_form = request.form.get('gitLink', None) # unique
+		resume_form = request.form.get('resume', None) # unique
+
+		#many to many relationships
+		hackathon_form  = request.form['hackathon']
+		#arrays
+		tech = request.form.getlist('tech[]')
+		languages = request.form.getlist('languages[]')
+		ints = request.form.getlist('interests[]')
+		hardware = request.form.getlist('hardware[]')
+
+		
+		cur = mysql.connection.cursor()
+		cur.execute("SELECT userID FROM user WHERE username=%s", [username])
+		userID = cur.fetchone()[0]
+
+		# hackathon
+		cur.execute("SELECT hackathonID FROM hackathons WHERE hackathon=%s", [hackathon_form])
+		hackathonID = cur.fetchone()[0]
+		cur.execute("UPDATE usertohackathon SET hackathonID=%s WHERE userID=%s", [hackathonID, userID])
+
+		# how to do rest of form lol
+
 	return render_template('update.html', username=username, profile=profile)
 	
 @app.route('/matches')
@@ -314,7 +350,7 @@ def matches():
 	message = None
 	matches=None
 	username = escape(session['username'])
-	profile=True #if profile was filled out
+	profile = True #if profile was filled out
 	cur = mysql.connection.cursor()
 
 	# userID

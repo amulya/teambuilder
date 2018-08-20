@@ -3,7 +3,7 @@
 <head>
 	<title>Your Profile</title>
 </head>
-<script src="https://use.fontawesome.com/96e46a4e6e.js"></script>
+ <script src="https://use.fontawesome.com/96e46a4e6e.js"></script>
 <body>
 {% extends "base.html" %}
 
@@ -12,7 +12,8 @@
 	<!-- <h1>Your Profile</h1> -->
 
 	<h1>{{username}}</h1>
-		
+
+		<h3><i class="fa fa-map-pin" aria-hidden="true"></i> {{ hackathon }}</h3>
 
 		{% if username == username_session %}
 		
@@ -20,14 +21,11 @@
 		
 		{% else %}
 			<ul style="list-style:none">
-					<li><h3><i class="fa fa-envelope" aria-hidden="true"></i> <a href="mailto:{{email}}"> {{ email }}</a></h3></li>
-					<li><h3><i class="fa fa-comments" aria-hidden="true"></i>  Twilio api?!</h3></li>
+					<li><h4><i class="fa fa-envelope" aria-hidden="true"></i> <a href="mailto:{{email}}"> {{ email }}</a></h4></li>
+					<li><h4><i class="fa fa-comments" aria-hidden="true"></i>  Twilio api?!</h4></li>
 				</ul>	
 		{% endif %}
-
-		<h2>Hackathon</h2>
-
-			{{ hackathon }}
+			
 
 		{% if projIdea %}
 

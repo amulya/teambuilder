@@ -20,6 +20,18 @@
 			<div style="text-align: center; color:white; text-shadow: #0856d3 3px 3px; font-size: 30px;">
 				<br>
 				<h1>Welcome, {{username}}!</h1>
+				<br>
+				{% if profile %}
+					<div>
+						<a href="{{ url_for('profile') }}"><button style="height:75px;width:225px"><h2>Your Profile</h2></button></a>
+						<br><br>
+						<a href="{{ url_for('matches') }}"><button style="height:75px;width:225px"><h2>Your Matches</h2></button></a>
+					</div>
+				{% else %}
+					<p>You haven't built your profile yet. Fill out your preferences to get your matches now!</p>
+					<br>
+					<a href="{{ url_for('prefs') }}"><button style="height:75px;width:225px"><h2>Customize Your Profile</h2></button></a>
+				{% endif %}
 			</div>
 	{% else %}
 	<div>

@@ -8,11 +8,89 @@
 	
 {% block content %}
 <h1>Update Your Preferences</h1>
-<div style="font-size: 32px">
+<div style="font-size: 14px">
 <ul>
 	<li>Update form goes here (prefs form, but w/ update statements instead of insert)
 	<li>How to change <strong>select</strong> number of prefs? So user doesn't have to fill out entire form again</li>
 </ul>
+</div>
+
+<div>
+	{% for error in error%}
+		<p style="color:red">{{ error }}</p>
+	{% endfor %}
+
+<form action="" method="POST">
+	Hackathon<br>
+	<input type="radio" name="hackathon" value="Hack the 6ix" required>Hack the 6ix<br>
+	<input type="radio" name="hackathon" value="HackMTY">HackMTY<br>
+	<input type="radio" name="hackathon" value="Bytehacks">ByteHacks<br>
+	<input type="radio" name="hackathon" value="HackRU">HackRU<br>
+	<br><br>
+	
+	Project Description (Max length: 50 characters) <br>
+	<textarea name="projIdea" style="width: 300px;height: 75px" form="prefs" method="post" maxlength="50"></textarea>
+	<br><br>
+
+	Technologies<br> <!-- Checklist -->
+	<input type="checkbox" name="tech[]" value="API">API<br>
+	<input type="checkbox" name="tech[]" value="Node">Node.js<br>
+	<input type="checkbox" name="tech[]" value="AngularJS">AngularJS<br>
+	<input type="checkbox" name="tech[]" value="Flask">Flask<br>
+	<input type="checkbox" name="tech[]" value="Django">Django<br>
+	<input type="checkbox" name="tech[]" value="Other">Other<br>
+	<br><br>
+
+	Interests <br> <!-- Checklist -->
+	<input type="checkbox" name="interests[]" value="Hardware">Hardware<br>
+	<input type="checkbox" name="interests[]" value="FinTech">FinTech<br>
+	<input type="checkbox" name="interests[]" value="Healthcare">Healthcare<br>
+	<input type="checkbox" name="interests[]" value="Food">Food<br>
+	<input type="checkbox" name="interests[]" value="Music">Music<br>
+	<input type="checkbox" name="interests[]" value="Other">Other<br>
+	<br><br>
+	
+
+	Languages <br> <!-- Checklist -->
+	<input type="checkbox" name="languages[]" value="Java">Java<br>
+	<input type="checkbox" name="languages[]" value="Python">Python<br>
+	<input type="checkbox" name="languages[]" value="C++">C++<br>
+	<input type="checkbox" name="languages[]" value="Ruby">Ruby<br>
+	<input type="checkbox" name="languages[]" value="Javascript">JavaScript<br>
+	<input type="checkbox" name="languages[]" value="HTML/CSS">HTML/CSS<br>
+	<input type="checkbox" name="languages[]" value="Other">Other<br>
+	<br><br>
+	
+	Hardware <br> <!-- Checklist -->
+	<input type="checkbox" name="hardware[]" value="Arduino">Arduino<br>
+	<input type="checkbox" name="hardware[]" value="Raspberry Pi">Raspberry Pi<br>
+	<input type="checkbox" name="hardware[]" value="Alexa">Alexa<br>
+	<input type="checkbox" name="hardware[]" value="Oculus">Oculus<br>
+	<input type="checkbox" name="hardware[]" value="Other">Other<br>
+	<br><br>
+	
+	Experience Level <br> <!-- Radio -->
+	<input type="radio" name="exper" value="Beginner">Beginner<br>
+	<input type="radio" name="exper" value="Intermediate">Intermediate<br>
+	<input type="radio" name="exper" value="Advanced">Advanced<br>
+	<br><br>
+
+	Competing? <br> <!-- Radio -->
+	<input type="radio" name="comp" value="Yes">Yes<br>
+	<input type="radio" name="comp" value="No"> No<br>
+	<br><br>
+
+	GitHub Link <br> <!-- Text -->
+	<input type="url" pattern="https?://github.+" name="gitLink" style="width: 300px"/>
+	<br><br>
+	
+	Resume Link <br> <!-- Text -->
+	<input type="url" name="resume" style="width: 300px"/>
+
+	<br><br>
+	<input type="submit">
+	<br><br>
+</form>
 </div>
 
 {% endblock %}
