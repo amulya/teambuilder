@@ -239,14 +239,16 @@ def profile(username):
 
 	# cols in user table (one to one relationships)
 	cur.execute("SELECT userID, projIdea, exper, comp, gitLink, resume, email FROM user WHERE username=%s", [username])
-	userID = cur.fetchone()[0] # need for many-to-many relationships
-	projIdea = cur.fetchone()[1] # project idea
-	exper = cur.fetchone()[2] # experience level
-	comp = cur.fetchone()[3] # competition level
-	gitLink = cur.fetchone()[4] # github link
-	resume = cur.fetchone()[5] # resume link
-	email = cur.fetchone()[6] # email
-
+	row = cur.fetchone()
+	userID = row[0] # need for many-to-many relationships
+	projIdea = row[1] # project idea
+	exper = row[2] # experience level
+	comp = row[3] # competition level
+	gitLink = row[4] # github link
+	resume = row[5] # resume link
+	email = row[6] # email
+	
+	
 	# hackathon
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
 	hID = cur.fetchone()[0]
