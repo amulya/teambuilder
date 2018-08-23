@@ -349,6 +349,7 @@ def update():
 def matches():
 	message = None
 	matches=None
+	num = 0
 	username = escape(session['username'])
 	profile = True #if profile was filled out
 	cur = mysql.connection.cursor()
@@ -375,10 +376,11 @@ def matches():
 	numRows = cur.execute("SELECT * FROM user WHERE userID !=%s AND userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [userID, hID]) 
 	if numRows > 0:
 		matches = cur.fetchall()
+		num = len(matches)
 	else:
 		message = "Sorry, you have no matches at your hackathon."
 
-	return render_template('matches.html', profile=profile, username=username, message=message, matches=matches)
+	return render_template('matches.html', profile=profile, username=username, message=message, matches=matches, num = num)
 
 app.secret_key = 'MVB79L'
 

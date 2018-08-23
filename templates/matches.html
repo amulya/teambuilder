@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Update Your Preferences</title>
+	<title>Your Matches</title>
 </head>
 <body>
 {% extends "base.html" %}
@@ -20,6 +20,7 @@
 	<h1>{{ message }}</h1>
 {% else %}
 <h1>Here are your matches, {{ username }}!</h1>
+<h2>{{ num }} results</h2>
 <div style="font-size: 32px">
 
 <table border = 1>
