@@ -19,7 +19,7 @@
 {% if message %}
 	<h1>{{ message }}</h1>
 {% else %}
-<h1>Here are your matches, {{ username }}!</h1>
+<h1>Here are your potential teammates, {{ username }}!</h1>
 <h2>{{ num }} results</h2>
 <div style="font-size: 32px">
 
@@ -28,6 +28,12 @@
 	<tr>
 		<td>User: <a href={{ url_for('profile', username = match[2]) }}><strong>{{ match[2] }}</strong></a></td>
 		<td>Email: {{ match[1] }}</td>
+		<td>Matches: 
+			{% for i in range(0, mydict[match[0]]|length - 1) %}
+				{{ mydict[ match[0] ][i] }},
+			{% endfor %}
+			{{ mydict[match[0]][mydict[match[0]]|length - 1] }}
+		</td>
 	{% endfor %}
 	</tr>
 </table>

@@ -370,17 +370,113 @@ def matches():
 	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
 	hackathon = cur.fetchone()[0]
 
+	# QUERY ALL OTHER FIELDS FROM CURRENT USER 
+
+	# technologies
+	cur.execute("SELECT * FROM usertotech WHERE userID=%s", [userID])
+	techList = []
+	for row in cur.fetchall(): # loop through rows in usertotech
+		techID = row[1]
+		cur.execute("SELECT tech FROM tech WHERE techID=%s", [techID])
+		tech = cur.fetchone()[0]
+		techList.append(tech)
+	if len(techList) == 0:
+		techList = None
+
+	# interests
+	cur.execute("SELECT * FROM usertointerests WHERE userID=%s", [userID])
+	intList = []
+	for row in cur.fetchall(): # loop through rows in usertotech
+		intID = row[1]
+		cur.execute("SELECT interest FROM interests WHERE intID=%s", [intID])
+		interest = cur.fetchone()[0]
+		intList.append(interest)
+	if len(intList) == 0:
+		intList = None
+
+	# languages
+	cur.execute("SELECT * FROM usertolang WHERE userID=%s", [userID])
+	langList = []
+	for row in cur.fetchall(): # loop through rows in usertotech
+		langID = row[1]
+		cur.execute("SELECT lang FROM langs WHERE langID=%s", [langID])
+		lang = cur.fetchone()[0]
+		langList.append(lang)
+	if len(langList) == 0:
+		langList = None
+
+	# hardware
+	cur.execute("SELECT * FROM usertohw WHERE userID=%s", [userID])
+	hwList = []
+	for row in cur.fetchall(): # loop through rows in usertotech
+		hwID = row[1]
+		cur.execute("SELECT hw FROM hw WHERE hwID=%s", [hwID])
+		hw = cur.fetchone()[0]
+		hwList.append(hw)
+	if len(hwList) == 0:
+		hwList = None
+
+
 	# select users at the same hackathon
 		# is this format correct?
-
+	mydict = dict()
 	numRows = cur.execute("SELECT * FROM user WHERE userID !=%s AND userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [userID, hID]) 
 	if numRows > 0:
 		matches = cur.fetchall()
+		l = []
+		for row in matches:
+			currID = row[0]
+			cur.execute("SELECT * FROM usertointerests WHERE userID=%s",[currID])
+			ints = cur.fetchall()
+			for row in ints:
+				# fetch string from db using id
+				cur.execute("SELECT interest FROM interests WHERE intID=%s", [row[1]])
+				item = cur.fetchone()[0]
+				if item in intList:
+					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
+					l.append(item)
+			
+			cur.execute("SELECT * FROM usertotech WHERE userID=%s",[row[0]])
+			tech = cur.fetchall()
+			for row in tech:
+				cur.execute("SELECT tech FROM tech WHERE techID=%s", [row[1]])
+				item = cur.fetchone()[0]
+				if item in techList:
+					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
+					l.append(item)
+
+			cur.execute("SELECT * FROM usertolang WHERE userID=%s",[row[0]])
+			langs = cur.fetchall()
+			for row in langs:
+				cur.execute("SELECT lang FROM langs WHERE langID=%s", [row[1]])
+				item = cur.fetchone()[0]
+				if item in langList:
+					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
+					l.append(item)
+
+			cur.execute("SELECT * FROM usertohw WHERE userID=%s",[row[0]])
+			hw = cur.fetchall()
+			for row in hw:
+				cur.execute("SELECT hw FROM hw WHERE hwID=%s", [row[1]])
+				item = cur.fetchone()[0]
+				if item in hwList:
+					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
+					l.append(item)
+
+			#update dict (sending to html)
+				# key: match's userID 
+				# value: list of matching attributes
+			key = row[0]
+			mydict[key] = l
+			l = []
+
+		#sorted(mydict, reverse=True)
+
 		num = len(matches)
 	else:
 		message = "Sorry, you have no matches at your hackathon."
 
-	return render_template('matches.html', profile=profile, username=username, message=message, matches=matches, num = num)
+	return render_template('matches.html', currID=currID,profile=profile, username=username, message=message, matches=matches, num = num, mydict=mydict)
 
 app.secret_key = 'MVB79L'
 
