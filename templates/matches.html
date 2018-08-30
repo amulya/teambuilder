@@ -22,25 +22,25 @@
 	{% endfor %}
 {% else %}
 <h1>Here are your potential teammates, {{ username }}!</h1>
-<h2>{{ num }} results</h2>
+<h2>{{ numResults }} results</h2>
 <div style="font-size: 32px">
 
 <table border = 1>
-{% for match in matches %}
+{% for key, value in results.items() %}
 	<tr>
 		<td>
-			User: <a href={{ url_for('profile', username = match[2]) }}><strong>{{ match[2] }}</strong></a>
+			User: <a href={{ url_for('profile', username = key) }}><strong>{{ key }}</strong></a>
 		</td>
 
 		<td>
-			{{ mydict[match[0]]|length }} matches: 
-			{% for i in range(0, mydict[match[0]]|length - 1) %}
-				{{ mydict[ match[0] ][i] }},
+			{{ value|length }} matches: 
+			{% for i in range(0, value|length - 1) %}
+				{{ value[i] }},
 			{% endfor %}
-			{{ mydict[match[0]][mydict[match[0]]|length - 1] }}
+			{{ value[value|length - 1] }}
 		</td>
-	{% endfor %}
 	</tr>
+{% endfor %}
 </table>
 
 </div>

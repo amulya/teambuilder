@@ -351,7 +351,7 @@ def update():
 def matches():
 	message = None
 	matches=None
-	num = 0
+	numResults = 0
 	currID = None
 	username = escape(session['username'])
 	profile = True #if profile was filled out
@@ -421,7 +421,7 @@ def matches():
 
 
 	# select users at the same hackathon
-		# is this format correct?
+	
 	mydict = dict()
 	numRows = cur.execute("SELECT * FROM user WHERE userID !=%s AND userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [userID, hID]) 
 	if numRows > 0:
@@ -472,14 +472,17 @@ def matches():
 			mydict[currID] = l
 			l = []
 
+		results = dict()
 		#sorted(mydict, reverse=True)
-		#sorted(mydict, key=lambda k: len(mydict[k]), reverse=True)
+		for k in sorted(mydict, key=lambda k: len(mydict[k]), reverse=True):
+			cur.execute("SELECT username FROM user WHERE userID=%s", [k])
+			results[cur.fetchone()[0]] = mydict[k]
 
-		num = len(matches)
+		numResults = len(matches)
 	else:
 		message = ["Sorry, there are no other Team Builders at your hackathon.","Please check your hackathon's schedule for a team building event!"]
 
-	return render_template('matches.html', currID=currID,profile=profile, username=username, message=message, matches=matches, num = num, mydict=mydict)
+	return render_template('matches.html', results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults, mydict=mydict)
 
 
 def fetch_list(midTable, item, itemTable, userID):
