@@ -17,7 +17,9 @@
 {% endwith %}
 
 {% if message %}
-	<h1>{{ message }}</h1>
+	{% for message in message %}
+		<h1 style="text-align: center">{{ message }}</h1>
+	{% endfor %}
 {% else %}
 <h1>Here are your potential teammates, {{ username }}!</h1>
 <h2>{{ num }} results</h2>
@@ -26,9 +28,12 @@
 <table border = 1>
 {% for match in matches %}
 	<tr>
-		<td>User: <a href={{ url_for('profile', username = match[2]) }}><strong>{{ match[2] }}</strong></a></td>
-		<td>Email: {{ match[1] }}</td>
-		<td>Matches: 
+		<td>
+			User: <a href={{ url_for('profile', username = match[2]) }}><strong>{{ match[2] }}</strong></a>
+		</td>
+
+		<td>
+			{{ mydict[match[0]]|length }} matches: 
 			{% for i in range(0, mydict[match[0]]|length - 1) %}
 				{{ mydict[ match[0] ][i] }},
 			{% endfor %}

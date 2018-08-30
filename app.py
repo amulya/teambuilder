@@ -266,6 +266,8 @@ def profile(username):
 	if len(techList) == 0:
 		techList = None
 
+	#techList = fetch_list('usertotech', 'tech', 'tech', userID)
+
 	# interests
 	cur.execute("SELECT * FROM usertointerests WHERE userID=%s", [userID])
 	intList = []
@@ -350,6 +352,7 @@ def matches():
 	message = None
 	matches=None
 	num = 0
+	currID = None
 	username = escape(session['username'])
 	profile = True #if profile was filled out
 	cur = mysql.connection.cursor()
@@ -363,7 +366,7 @@ def matches():
 	hID = cur.fetchone()
 
 	if hID is None: # return early if no profile
-		return render_template('nomatches.html', username=username)
+		return render_template('matches.html', username=username, message=["Oops! Looks like you haven't specified your preferences yet."])
 
 	# Generating matches
 
@@ -436,7 +439,7 @@ def matches():
 					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
 					l.append(item)
 			
-			cur.execute("SELECT * FROM usertotech WHERE userID=%s",[row[0]])
+			cur.execute("SELECT * FROM usertotech WHERE userID=%s",[currID])
 			tech = cur.fetchall()
 			for row in tech:
 				cur.execute("SELECT tech FROM tech WHERE techID=%s", [row[1]])
@@ -445,7 +448,7 @@ def matches():
 					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
 					l.append(item)
 
-			cur.execute("SELECT * FROM usertolang WHERE userID=%s",[row[0]])
+			cur.execute("SELECT * FROM usertolang WHERE userID=%s",[currID])
 			langs = cur.fetchall()
 			for row in langs:
 				cur.execute("SELECT lang FROM langs WHERE langID=%s", [row[1]])
@@ -454,7 +457,7 @@ def matches():
 					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
 					l.append(item)
 
-			cur.execute("SELECT * FROM usertohw WHERE userID=%s",[row[0]])
+			cur.execute("SELECT * FROM usertohw WHERE userID=%s",[currID])
 			hw = cur.fetchall()
 			for row in hw:
 				cur.execute("SELECT hw FROM hw WHERE hwID=%s", [row[1]])
@@ -466,17 +469,34 @@ def matches():
 			#update dict (sending to html)
 				# key: match's userID 
 				# value: list of matching attributes
-			key = row[0]
-			mydict[key] = l
+			mydict[currID] = l
 			l = []
 
 		#sorted(mydict, reverse=True)
+		#sorted(mydict, key=lambda k: len(mydict[k]), reverse=True)
 
 		num = len(matches)
 	else:
-		message = "Sorry, you have no matches at your hackathon."
+		message = ["Sorry, there are no other Team Builders at your hackathon.","Please check your hackathon's schedule for a team building event!"]
 
 	return render_template('matches.html', currID=currID,profile=profile, username=username, message=message, matches=matches, num = num, mydict=mydict)
+
+
+def fetch_list(midTable, item, itemTable, userID):
+	cur = mysql.connection.cursor()
+	sql_command = "SELECT * FROM "+midTable+" WHERE userID=%s"
+	cur.execute(sql_command, [userID])
+	itemList = []
+	for row in cur.fetchall(): # loop through rows in usertotech
+		itemID = row[1]
+		sql_command = "SELECT "+item+" FROM "+itemTable+" WHERE "+item+"=%s"
+		cur.execute(sql_command, [itemID])
+		item = cur.fetchone()[0]
+		itemList.append(item)
+	if len(itemList) == 0:
+		itemList = None
+	return itemList
+
 
 app.secret_key = 'MVB79L'
 
