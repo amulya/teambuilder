@@ -3,6 +3,7 @@ from passlib.hash import sha256_crypt
 from flask_mysqldb import MySQL
 from flask_sqlalchemy import SQLAlchemy
 import yaml
+import collections
 
 app = Flask(__name__)
 
@@ -33,7 +34,7 @@ def index():
 
 @app.route('/login', methods = ["GET", "POST"]) 
 def login():
-	error = None
+	error = Nonereq
 	if 'username' in session:
 		return redirect(url_for('index'))
 	if request.method == 'POST':
@@ -347,7 +348,7 @@ def update():
 
 	return render_template('update.html', username=username, profile=profile)
 	
-@app.route('/matches')
+@app.route('/matches', methods = ["GET", "POST"])
 def matches():
 	message = None
 	matches=None
@@ -419,9 +420,19 @@ def matches():
 	if len(hwList) == 0:
 		hwList = None
 
+	# exper + comp level
+	cur.execute("SELECT exper, comp FROM user WHERE userID=%s", [userID])
+	r = cur.fetchone()
+	exper = r[0]
+	comp = r[1]
 
 	# select users at the same hackathon
 	
+	match_tech = []
+	match_langs = []
+	match_ints = []
+	match_hw = []
+
 	mydict = dict()
 	numRows = cur.execute("SELECT * FROM user WHERE userID !=%s AND userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [userID, hID]) 
 	if numRows > 0:
@@ -429,60 +440,145 @@ def matches():
 		l = []
 		for row in matches:
 			currID = row[0]
-			cur.execute("SELECT * FROM usertointerests WHERE userID=%s",[currID])
-			ints = cur.fetchall()
-			for row in ints:
-				# fetch string from db using id
-				cur.execute("SELECT interest FROM interests WHERE intID=%s", [row[1]])
-				item = cur.fetchone()[0]
-				if item in intList:
-					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
-					l.append(item)
+			user_name = row[2]
+
+			# account for experience + comp level 
+				
+			exper_match = row[6] # exper = col 6
+			comp_match = row[5] # comp = col 5
+
+			if exper == exper_match:
+				l.insert(0, exper)
+
+			if comp == comp_match:
+				if comp == 'Yes':
+					l.insert(1, 'Competing')
+				else:
+					l.insert(1, 'Not Competing')
+
+			if intList is not None:
+				cur.execute("SELECT * FROM usertointerests WHERE userID=%s",[currID])
+				ints = cur.fetchall()
+				for row in ints:
+					# fetch string from db using id
+					cur.execute("SELECT interest FROM interests WHERE intID=%s", [row[1]])
+					item = cur.fetchone()[0]
+					if item in intList:
+						cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
+						l.append(item)
+						match_ints.append(item)
 			
-			cur.execute("SELECT * FROM usertotech WHERE userID=%s",[currID])
-			tech = cur.fetchall()
-			for row in tech:
-				cur.execute("SELECT tech FROM tech WHERE techID=%s", [row[1]])
-				item = cur.fetchone()[0]
-				if item in techList:
-					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
-					l.append(item)
+			if techList is not None:
+				cur.execute("SELECT * FROM usertotech WHERE userID=%s",[currID])
+				tech = cur.fetchall()
+				for row in tech:
+					cur.execute("SELECT tech FROM tech WHERE techID=%s", [row[1]])
+					item = cur.fetchone()[0]
+					if item in techList:
+						cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
+						l.append(item)
+						match_tech.append(item)
 
-			cur.execute("SELECT * FROM usertolang WHERE userID=%s",[currID])
-			langs = cur.fetchall()
-			for row in langs:
-				cur.execute("SELECT lang FROM langs WHERE langID=%s", [row[1]])
-				item = cur.fetchone()[0]
-				if item in langList:
-					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
-					l.append(item)
+			if langList is not None:
+				cur.execute("SELECT * FROM usertolang WHERE userID=%s",[currID])
+				langs = cur.fetchall()
+				for row in langs:
+					cur.execute("SELECT lang FROM langs WHERE langID=%s", [row[1]])
+					item = cur.fetchone()[0]
+					if item in langList:
+						cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
+						l.append(item)
+						match_langs.append(item)
 
-			cur.execute("SELECT * FROM usertohw WHERE userID=%s",[currID])
-			hw = cur.fetchall()
-			for row in hw:
-				cur.execute("SELECT hw FROM hw WHERE hwID=%s", [row[1]])
-				item = cur.fetchone()[0]
-				if item in hwList:
-					cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
-					l.append(item)
+			if hwList is not None:
+				cur.execute("SELECT * FROM usertohw WHERE userID=%s",[currID])
+				hw = cur.fetchall()
+				for row in hw:
+					cur.execute("SELECT hw FROM hw WHERE hwID=%s", [row[1]])
+					item = cur.fetchone()[0]
+					if item in hwList:
+						cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
+						l.append(item)
+						match_hw.append(item)
 
 			#update dict (sending to html)
 				# key: match's userID 
 				# value: list of matching attributes
-			mydict[currID] = l
+			mydict[user_name] = l
 			l = []
 
+		# make results dictionary - will display this in html
+			# key: username
+			# value: list of matching attributes
 		results = dict()
-		#sorted(mydict, reverse=True)
 		for k in sorted(mydict, key=lambda k: len(mydict[k]), reverse=True):
-			cur.execute("SELECT username FROM user WHERE userID=%s", [k])
-			results[cur.fetchone()[0]] = mydict[k]
+			results[k] = mydict[k] 
 
 		numResults = len(matches)
 	else:
 		message = ["Sorry, there are no other Team Builders at your hackathon.","Please check your hackathon's schedule for a team building event!"]
 
-	return render_template('matches.html', results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults, mydict=mydict)
+		if request.method == 'POST':
+
+			dict1 = dict() #collections.OrderedDict()
+			dict2 = dict() #collections.OrderedDict()
+
+			resFilter = request.args['resFilter']
+			# filters: tech, interests, languages, hw, exper level, comp
+			if resFilter == 'tech':
+				for key in results:
+					for item in techList:
+						if item in match_tech:
+							dict1[key] = results[key]
+							break
+						else: 
+							dict2[key] = results[key]
+							break
+			elif resFilter == 'ints':
+				for key in results:
+					for item in intList:
+						if tech in match_ints:
+							dict1[key] = results[key]
+							break
+						else: 
+							dict2[key] = results[key]
+							break
+			elif resFilter == 'langs':
+				for key in results:
+					for item in langList:
+						if item in match_langs:
+							dict1[key] = results[key]
+							break
+						else: 
+							dict2[key] = results[key]
+							break
+			elif resFilter == 'hw':
+				for key in results:
+					for item in hwList:
+						if item in match_hw:
+							dict1[key] = results[key]
+							break
+						else: 
+							dict2[key] = results[key]
+							break
+			elif resFilter == 'exper':
+				for key in results:
+					if comp in results[key]:
+						dict1[key] = results[key]
+					else:
+						dict2[key] = results[key]
+			elif resFilter == 'comp':
+				for key in results:
+					if comp in results[key]:
+						dict1[key] = results[key]
+					else:
+						dict2[key] = results[key]
+
+			results = dict1 + dict2
+			return render_template('matches.html', resFilter = resFilter, results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
+			#return redirect(url_for('matches'))
+	return render_template('matches.html', results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
+
 
 
 def fetch_list(midTable, item, itemTable, userID):

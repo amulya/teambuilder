@@ -25,6 +25,21 @@
 <h2>{{ numResults }} results</h2>
 <div style="font-size: 32px">
 
+<form action="" method="POST">
+	Filter by: 
+  <select name="resFilter" style="font-size: 20px">
+    <option value="tech">Technology</option>
+    <option value="ints">Interests</option>
+    <option value="lang">Languages</option>
+    <option value="hw">Hardware</option>
+    <option value="exper">Experience Level</option>
+    <option value="comp">Competition Level</option>
+  </select>
+	<input type="submit">
+</form>
+
+<br>
+
 <table border = 1>
 {% for key, value in results.items() %}
 	<tr>
