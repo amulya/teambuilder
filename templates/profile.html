@@ -4,13 +4,13 @@
 	<title>Your Profile</title>
 </head>
  <script src="https://use.fontawesome.com/96e46a4e6e.js"></script>
-<body>
+<body style="background-color: #4286f4;font-family: Helvetica-Light, Sans-Serif">
 {% extends "base.html" %}
 
 {% block content %}
 
 	<!-- <h1>Your Profile</h1> -->
-
+<div style="color:white; text-shadow: #0856d3 3px 3px 3px">
 	<h1>{{username}}</h1>
 
 		<h3><i class="fa fa-map-pin" aria-hidden="true"></i> {{ hackathon }}</h3>
@@ -47,7 +47,7 @@
 			{% endfor %}
 
 		{% endif %}
-
+		
 
 		{% if intList %}
 
@@ -113,6 +113,7 @@
 			<a target="_blank" href="{{ resume }}">{{ resume }}</a><i class="fa fa-link" aria-hidden="true"></i>
 
 		{% endif %}
+		</div>
 <br><br><br><br>
 
 {% endblock %}

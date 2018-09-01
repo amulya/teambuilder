@@ -512,9 +512,10 @@ def matches():
 			# value: list of matching attributes
 		results = dict()
 		for k in sorted(mydict, key=lambda k: len(mydict[k]), reverse=True):
+			#if len(mydict[k]) > 0:
 			results[k] = mydict[k] 
 
-		numResults = len(matches)
+		numResults = len(results)
 	else:
 		message = ["Sorry, there are no other Team Builders at your hackathon.","Please check your hackathon's schedule for a team building event!"]
 

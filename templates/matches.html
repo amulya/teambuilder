@@ -3,7 +3,7 @@
 <head>
 	<title>Your Matches</title>
 </head>
-<body>
+<body style="background-color: #4286f4;font-family: Helvetica-Light, Sans-Serif">
 {% extends "base.html" %}
 	
 {% block content %}
@@ -18,12 +18,12 @@
 
 {% if message %}
 	{% for message in message %}
-		<h1 style="text-align: center">{{ message }}</h1>
+		<h1 style="text-align: center;color: white">{{ message }}</h1>
 	{% endfor %}
 {% else %}
-<h1>Here are your potential teammates, {{ username }}!</h1>
-<h2>{{ numResults }} results</h2>
-<div style="font-size: 32px">
+<h1 style="color:white;text-shadow: #0856d3 3px 3px 3px;font-size: 32px">Here are your potential teammates, {{ username }}!</h1>
+<h2 style="color:white;text-shadow: #0856d3 3px 3px 3px">{{ numResults }} results</h2>
+<div style="font-size: 32px;color:white;text-shadow: #0856d3 3px 3px 3px">
 
 <div style="height:48px">
 		<form action="" method="POST">
@@ -49,7 +49,7 @@
 		</td>
 
 		<td>
-			{{ value|length }} matches: 
+			<strong>{{ value|length }} matches </strong>
 			{% for i in range(0, value|length - 1) %}
 				{{ value[i] }},
 			{% endfor %}
