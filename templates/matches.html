@@ -25,20 +25,21 @@
 <h2>{{ numResults }} results</h2>
 <div style="font-size: 32px">
 
-<form action="" method="POST">
-	Filter by: 
-  <select name="resFilter" style="font-size: 20px">
-    <option value="tech">Technology</option>
-    <option value="ints">Interests</option>
-    <option value="lang">Languages</option>
-    <option value="hw">Hardware</option>
-    <option value="exper">Experience Level</option>
-    <option value="comp">Competition Level</option>
-  </select>
-	<input type="submit">
-</form>
-
-<br>
+<div style="height:48px">
+		<form action="" method="POST">
+		Filter by: 
+  		<select name="resFilter" style="font-size: 20px">
+   			<option value="tech">Technology</option>
+    		<option value="ints">Interests</option>
+    		<option value="lang">Languages</option>
+    		<option value="hw">Hardware</option>
+    		<option value="exper">Experience Level</option>
+    		<option value="comp">Competition Level</option>
+  		</select>
+		<button type="submit" style="font-size: 18px; width:80px;height:30px;text-align: center;vertical-align: center">Submit</button>
+		<a href="{{ url_for('matches')}}"><button style="font-size: 18px; width:110px;height:30px;text-align: center;vertical-align: center">Clear filter</button></a>
+		</form>
+</div>
 
 <table border = 1>
 {% for key, value in results.items() %}

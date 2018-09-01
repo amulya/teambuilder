@@ -34,7 +34,7 @@ def index():
 
 @app.route('/login', methods = ["GET", "POST"]) 
 def login():
-	error = Nonereq
+	error = None
 	if 'username' in session:
 		return redirect(url_for('index'))
 	if request.method == 'POST':
@@ -518,65 +518,86 @@ def matches():
 	else:
 		message = ["Sorry, there are no other Team Builders at your hackathon.","Please check your hackathon's schedule for a team building event!"]
 
-		if request.method == 'POST':
+	if request.method == 'POST':
 
-			dict1 = dict() #collections.OrderedDict()
-			dict2 = dict() #collections.OrderedDict()
+		dict1 = collections.OrderedDict()
+		dict2 = collections.OrderedDict()
 
-			resFilter = request.args['resFilter']
-			# filters: tech, interests, languages, hw, exper level, comp
-			if resFilter == 'tech':
-				for key in results:
-					for item in techList:
-						if item in match_tech:
-							dict1[key] = results[key]
-							break
-						else: 
-							dict2[key] = results[key]
-							break
-			elif resFilter == 'ints':
-				for key in results:
-					for item in intList:
-						if tech in match_ints:
-							dict1[key] = results[key]
-							break
-						else: 
-							dict2[key] = results[key]
-							break
-			elif resFilter == 'langs':
-				for key in results:
-					for item in langList:
-						if item in match_langs:
-							dict1[key] = results[key]
-							break
-						else: 
-							dict2[key] = results[key]
-							break
-			elif resFilter == 'hw':
-				for key in results:
-					for item in hwList:
-						if item in match_hw:
-							dict1[key] = results[key]
-							break
-						else: 
-							dict2[key] = results[key]
-							break
-			elif resFilter == 'exper':
-				for key in results:
-					if comp in results[key]:
+		resFilter = request.form.get('resFilter')
+		# filters: tech, interests, languages, hw, exper level, comp
+		if resFilter == 'tech':
+			for key in results:
+				for tech in techList:
+					if item in match_tech:
 						dict1[key] = results[key]
-					else:
+						break
+					else: 
 						dict2[key] = results[key]
-			elif resFilter == 'comp':
-				for key in results:
-					if comp in results[key]:
+						break
+			#flash('Results filtered by technology')
+		elif resFilter == 'ints':
+			for key in results:
+				for interest in intList:
+					if tech in match_ints:
 						dict1[key] = results[key]
-					else:
+						break
+					else: 
 						dict2[key] = results[key]
+						break
+			#flash('Results filtered by interests')
+		elif resFilter == 'lang':
+			for key in results:
+				for lang in langList:
+					if item in match_langs:
+						dict1[key] = results[key]
+						break
+					else: 
+						dict2[key] = results[key]
+						break
+			#flash('Results filtered by language')
+		elif resFilter == 'hw':
+			for key in results:
+				for hw in hwList:
+					if item in match_hw:
+						dict1[key] = results[key]
+						break
+					else: 
+						dict2[key] = results[key]
+						break
+			#flash('Results filtered by hardware')
+		elif resFilter == 'exper':
+			for key in results:
+				if exper in results[key]:
+					dict1[key] = results[key]
+				else:
+					dict2[key] = results[key]
 
-			results = dict1 + dict2
-			return render_template('matches.html', resFilter = resFilter, results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
-			#return redirect(url_for('matches'))
+			#flash('Results filtered by experience level')
+		elif resFilter == 'comp':
+			c = ' '
+			if comp == 'Yes':
+				c = 'Competing'
+			else:
+				c = 'Not competing'
+
+			for key in results:
+				if c in results[key]:
+					dict1[key] = results[key]
+				else:
+					dict2[key] = results[key]
+
+			#flash('Results filtered by competition level')
+		#results = dict1 + dict2
+		dict3 = collections.OrderedDict()
+		for key in dict1:
+			dict3[key] = dict1[key]
+
+		for key in dict2:
+			dict3[key] = dict2[key]
+
+		results = dict3
+		#return render_template('matches.html', results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
+		#return redirect(url_for('matches'))
 	return render_template('matches.html', results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
 
 
