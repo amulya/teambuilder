@@ -350,6 +350,7 @@ def update():
 	
 @app.route('/matches', methods = ["GET", "POST"])
 def matches():
+	filterType=None
 	message = None
 	matches=None
 	numResults = 0
@@ -433,6 +434,11 @@ def matches():
 	match_ints = []
 	match_hw = []
 
+	techMatches = dict()
+	langMatches = dict()
+	intMatches = dict()
+	hwMatches = dict()
+
 	mydict = dict()
 	numRows = cur.execute("SELECT * FROM user WHERE userID !=%s AND userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [userID, hID]) 
 	if numRows > 0:
@@ -507,73 +513,75 @@ def matches():
 			mydict[user_name] = l
 			l = []
 
+			# initialize dictionaries that keep track of number of matches per user in each category
+				# key: username
+				# value: list of matching attributes
+			if len(match_tech) > 0:
+				techMatches[user_name] = match_tech
+				match_tech = []
+
+			if len(match_langs) > 0:
+				langMatches[user_name] = match_langs
+				match_langs = []
+
+			if len(match_ints) > 0:
+				intMatches[user_name] = match_ints
+				match_ints = []
+
+			if len(match_hw) > 0:
+				hwMatches[user_name] = match_hw
+				match_hw = [] 
+
+
 		# make results dictionary - will display this in html
 			# key: username
 			# value: list of matching attributes
 		results = dict()
 		for k in sorted(mydict, key=lambda k: len(mydict[k]), reverse=True):
-			#if len(mydict[k]) > 0:
-			results[k] = mydict[k] 
+			if len(mydict[k]) > 0:
+				results[k] = mydict[k] 
 
 		numResults = len(results)
 	else:
 		message = ["Sorry, there are no other Team Builders at your hackathon.","Please check your hackathon's schedule for a team building event!"]
 
+	dict1=None
+	dict2=None
+
 	if request.method == 'POST':
 
 		dict1 = collections.OrderedDict()
-		dict2 = collections.OrderedDict()
+		#dict2 = collections.OrderedDict()
 
 		resFilter = request.form.get('resFilter')
 		# filters: tech, interests, languages, hw, exper level, comp
 		if resFilter == 'tech':
-			for key in results:
-				for tech in techList:
-					if item in match_tech:
-						dict1[key] = results[key]
-						break
-					else: 
-						dict2[key] = results[key]
-						break
-			#flash('Results filtered by technology')
+			for k in sorted(techMatches, key=lambda k: len(techMatches[k]), reverse=True):
+				dict1[k] = techMatches[k]
+			filterType = 'technology'
+			
 		elif resFilter == 'ints':
-			for key in results:
-				for interest in intList:
-					if tech in match_ints:
-						dict1[key] = results[key]
-						break
-					else: 
-						dict2[key] = results[key]
-						break
-			#flash('Results filtered by interests')
+			for k in sorted(intMatches, key=lambda k: len(intMatches[k]), reverse=True):
+				dict1[k] = intMatches[k]
+			filterType = 'interest'
+		
 		elif resFilter == 'lang':
-			for key in results:
-				for lang in langList:
-					if item in match_langs:
-						dict1[key] = results[key]
-						break
-					else: 
-						dict2[key] = results[key]
-						break
-			#flash('Results filtered by language')
+			for k in sorted(langMatches, key=lambda k: len(langMatches[k]), reverse=True):
+				#dict1[k] = results[k]
+				dict1[k] = langMatches[k]
+			filterType = 'language'
+		
 		elif resFilter == 'hw':
-			for key in results:
-				for hw in hwList:
-					if item in match_hw:
-						dict1[key] = results[key]
-						break
-					else: 
-						dict2[key] = results[key]
-						break
-			#flash('Results filtered by hardware')
+			for k in sorted(hwMatches, key=lambda k: len(hwMatches[k]), reverse=True):
+				dict1[k] = hwMatches[k]
+			filterType = 'hardware'
+
 		elif resFilter == 'exper':
 			for key in results:
 				if exper in results[key]:
 					dict1[key] = results[key]
-				else:
-					dict2[key] = results[key]
+			filterType = 'experience level'
 
-			#flash('Results filtered by experience level')
 		elif resFilter == 'comp':
 			c = ' '
 			if comp == 'Yes':
@@ -584,22 +592,21 @@ def matches():
 			for key in results:
 				if c in results[key]:
 					dict1[key] = results[key]
-				else:
-					dict2[key] = results[key]
+			filterType = 'competition level'
 
-			#flash('Results filtered by competition level')
 		#results = dict1 + dict2
-		dict3 = collections.OrderedDict()
-		for key in dict1:
-			dict3[key] = dict1[key]
+		#dict3 = collections.OrderedDict()
+		#for key in dict1:
+		#	dict3[key] = dict1[key]
 
-		for key in dict2:
-			dict3[key] = dict2[key]
+		#for key in dict2:
+		#	dict3[key] = dict2[key]
 
-		results = dict3
+		results = dict1
+		numResults = len(results)
 		#return render_template('matches.html', results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
 		#return redirect(url_for('matches'))
-	return render_template('matches.html', results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
+	return render_template('matches.html', filterType=filterType, dict1=dict1,results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
 
 
 

@@ -1,0 +1,26 @@
+
+
+body {
+	background-color: #4286f4;
+	font-family: Helvetica-Light, Sans-Serif;
+}
+
+button {
+	background-color:#e0edf9;
+	height:90px;
+	width:250px;
+	border: 1px solid;
+	border-radius: 15px;
+	box-shadow: 5px 10px 8px #0349ba;
+}
+
+.header {
+	color: white; 
+	text-shadow: 4px 4px 2px #0761f2;
+}
+
+table {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}

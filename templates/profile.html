@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Your Profile</title>
+<link rel="stylesheet" type="text/css" href="/static/styles.css">
+	<title>{{ username }}</title>
 </head>
- <script src="https://use.fontawesome.com/96e46a4e6e.js"></script>
-<body style="background-color: #4286f4;font-family: Helvetica-Light, Sans-Serif">
+<body>
 {% extends "base.html" %}
 
 {% block content %}
-
+<br><br><br><br>
 	<!-- <h1>Your Profile</h1> -->
-<div style="color:white; text-shadow: #0856d3 3px 3px 3px">
-	<h1>{{username}}</h1>
+<div class="header">
+	
+	<div style="text-align: center">
+		<div class="header" style="font-size: 50px">{{username}}</div>
 
 		<h3><i class="fa fa-map-pin" aria-hidden="true"></i> {{ hackathon }}</h3>
 
 		{% if username == username_session %}
 		
-			<h4>Changed your mind about something? <a href="{{url_for('update')}}">Click here to update your preferences.</a></h4>
+			<div class="header" style="font-size: 15px">Changed your mind about something? <a href="{{url_for('update')}}">Click here to update your preferences.</a></div>
 		
 		{% else %}
 			<ul style="list-style:none">
@@ -25,16 +27,31 @@
 					<li><h4><i class="fa fa-comments" aria-hidden="true"></i>  Twilio api?!</h4></li>
 				</ul>	
 		{% endif %}
+		
+	</div>
 			
-
 		{% if projIdea %}
-
-		Project Description
+		
+		<h2>Project Description</h2>
 
 			{{ projIdea }}
 
 		{% endif %}
 
+
+		{% if exper %}
+
+		<h2>Experience Level</h2>
+
+			{{ exper }}
+		{% endif %}
+
+		{% if comp %}
+
+		<h2>Competing?</h2>
+
+			{{ comp }}
+		{% endif %}
 
 		{% if techList %}
 
@@ -84,25 +101,11 @@
 			{% endfor %}
 		{% endif %}
 
-		{% if exper %}
-
-		<h2>Experience Level</h2>
-
-			{{ exper }}
-		{% endif %}
-
-		{% if comp %}
-
-		<h2>Competing?</h2>
-
-			{{ comp }}
-		{% endif %}
-
 		{% if gitLink %}
 
 		<h2>Github</h2>
 
-			<a target="_blank" href="{{ gitLink }}">{{ gitLink }}</a><i class="fa fa-link" aria-hidden="true"></i>
+			<a target="_blank" href="http://github.com/{{ gitLink }}">{{ gitLink }}</a><i class="fa fa-link" aria-hidden="true"></i>
 
 		{% endif %}
 

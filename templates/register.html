@@ -3,17 +3,18 @@
 <head>
 	<title>Register</title>
 </head>
+<link rel="stylesheet" type="text/css" href="static/styles.css">
 <body>
 
 {% extends "base.html" %}
 	
 {% block content %}
 
-<div style="text-align: center">
+<div class="header" style="text-align: center">
 <br><br><br><br><br><br><br>
 
-<h1>Register</h1>
-<h3>Create a free account!</h3>
+<div class="header" style="font-size: 40px;height:60px">Register</div>
+<div class="header" style="font-size: 20px;height: 40px">Create a free account!</div>
 
 {% for error in error%}
 	<p style="color:red">{{ error }}</p>
@@ -29,7 +30,7 @@
 		<br>
 		Confirm Password <input type="password" name="confirm_password" required>
 		<br><br>
-		<button type="submit" style="font-size: 18px; width:80px;height:40px;text-align: center;vertical-align: center">Submit</button>
+		<button type="submit" style="font-size: 18px; width:80px;height:40px;border-radius: 10px;">Submit</button>
 	</form>
 </div>
 </div>

@@ -3,7 +3,8 @@
 <head>
 	<title>Your Matches</title>
 </head>
-<body style="background-color: #4286f4;font-family: Helvetica-Light, Sans-Serif">
+<link rel="stylesheet" type="text/css" href="static/styles.css">
+<body>
 {% extends "base.html" %}
 	
 {% block content %}
@@ -21,12 +22,14 @@
 		<h1 style="text-align: center;color: white">{{ message }}</h1>
 	{% endfor %}
 {% else %}
-<h1 style="color:white;text-shadow: #0856d3 3px 3px 3px;font-size: 32px">Here are your potential teammates, {{ username }}!</h1>
-<h2 style="color:white;text-shadow: #0856d3 3px 3px 3px">{{ numResults }} results</h2>
+<br><br><br>
+<div class="header" style="font-size: 40px;text-align: center">Here are your potential teammates, {{ username }}!</div>
+<br>
+<div class="header" style="text-align: center; font-size: 35px"><strong>{{ numResults }} results</strong></div>
+<br>
 <div style="font-size: 32px;color:white;text-shadow: #0856d3 3px 3px 3px">
-
-<div style="height:48px">
-		<form action="" method="POST">
+<div style="height:60px;text-align: center">		
+		<form style="display: inline-block" action="" method="POST">
 		Filter by: 
   		<select name="resFilter" style="font-size: 20px">
    			<option value="tech">Technology</option>
@@ -37,15 +40,20 @@
     		<option value="comp">Competition Level</option>
   		</select>
 		<button type="submit" style="font-size: 18px; width:80px;height:30px;text-align: center;vertical-align: center">Submit</button>
-		<a href="{{ url_for('matches')}}"><button style="font-size: 18px; width:110px;height:30px;text-align: center;vertical-align: center">Clear filter</button></a>
 		</form>
+		<a style="display: inline-block" href="{{ url_for('matches') }}"><button style="font-size: 18px; width:110px;height:30px;text-align: center;vertical-align: center">Clear filter</button></a>
 </div>
 
+{% if filterType %}
+	<div class="header" style="font-size: 30px;text-align: center;height: 50px">Results filtered by {{ filterType }}</div>
+{% endif %}
+
+{% if numResults > 0%}
 <table border = 1>
 {% for key, value in results.items() %}
 	<tr>
 		<td>
-			User: <a href={{ url_for('profile', username = key) }}><strong>{{ key }}</strong></a>
+			<a href={{ url_for('profile', username = key) }}><strong>{{ key }}</strong></a>
 		</td>
 
 		<td>
@@ -58,6 +66,7 @@
 	</tr>
 {% endfor %}
 </table>
+{% endif%}
 
 </div>
 {% endif %}

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="static/styles.css">
 	<title>Team Builder</title>
 </head>
 <body>
@@ -12,8 +13,8 @@
 <div style="text-align: center">
 <br><br><br><br><br><br><br>
 
-<h1>Log in</h1>
-<h3><a href={{ url_for('register') }}>New user? Register here!</a></h3>
+<div class="header" style="font-size: 40px;height: 60px">Log in</div>
+<div class="header" style="font-size: 20px;height: 40px"><a href={{ url_for('register') }}>New user? Register here!</a></div>
 
 {% if error %}
 	<p style="color:red">{{ error }}</p>
@@ -27,16 +28,19 @@
   {% endif %}
 {% endwith %}
 
-<div style="font-size: 22px">
+<div style="font-size: 30px">
 	<form method="POST">
-		Username
-		<input type="text" name="username" required>
-		<br>
-		Password
+		<div class="header" style="height:40px">Username
+			<input type="text" name="username" required>
+		</div>
+		
+		<div class="header" style="height:55px">
+			Password
 		<input type="password" name="password" required>
-		<br><br>
+		</div>
+		
 		<!-- <input type="submit" style="font-size: 20px"> -->
-		<button type="submit" style="font-size: 18px; width:80px;height:40px;text-align: center;vertical-align: center">Submit</button>
+		<button type="submit" style="font-size: 18px; width:80px;height:40px;border-radius: 10px;">Submit</button>
 	</form>
 </div>
 </div>
