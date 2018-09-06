@@ -45,7 +45,7 @@
 </div>
 
 {% if filterType %}
-	<div class="header" style="font-size: 30px;text-align: center;height: 50px">Results filtered by {{ filterType }}</div>
+	<div class="header" style="font-size: 30px;text-align: center;height: 50px"><strong>Results filtered by {{ filterType }}</strong></div>
 {% endif %}
 
 {% if numResults > 0%}
@@ -57,7 +57,7 @@
 		</td>
 
 		<td>
-			<strong>{{ value|length }} matches </strong>
+			<strong>{{ value|length }} {% if value|length != 1 %} matches {% else %} match {% endif %} </strong>
 			{% for i in range(0, value|length - 1) %}
 				{{ value[i] }},
 			{% endfor %}

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, url_for, session, redirect, escape, flash
 from passlib.hash import sha256_crypt
-from flask_mysqldb import MySQL
+import pymysql
 from flask_sqlalchemy import SQLAlchemy
 import yaml
 import collections
@@ -9,23 +9,26 @@ app = Flask(__name__)
 
 #Configure db
 db = yaml.load(open('db.yaml'))
+"""
 app.config['MYSQL_HOST'] = db['mysql_host']
 app.config['MYSQL_USER'] = db['mysql_user']
 app.config['MYSQL_PASSWORD'] = db['mysql_password']
 app.config['MYSQL_DB'] = db['mysql_db']
+"""
 
-mysql = MySQL(app)
+myApp = pymysql.connect(host=db['mysql_host'], user=db['mysql_user'], password=db['mysql_password'], db=db['mysql_db'], charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
 
 profile = True # if profile was filled out
 
 @app.route('/', methods = ["GET"]) 
 def index():
 	if 'username' in session:
-		username = escape(session['username'])
+		username = session['username']
 		# check if user filled out profile + has matches
-		cur = mysql.connection.cursor()
+		cur = myApp.cursor()
 		cur.execute("SELECT userID FROM user WHERE username=%s", [username])
-		userID = cur.fetchone()[0]
+		userID = cur.fetchone()['userID']
 		cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
 		if cur.fetchone() is not None:
 			return render_template('index.html', username=username, profile=profile)
@@ -40,14 +43,12 @@ def login():
 	if request.method == 'POST':
 		username_form  = request.form['username']
 		password_form  = request.form['password']
-		cur = mysql.connection.cursor()
+		cur = myApp.cursor()
 		cur.execute("SELECT COUNT(1) FROM user WHERE username = %s;", [username_form]) # CHECKS IF USERNAME EXISTS
-		mysql.connection.commit()
-		if cur.fetchone()[0]:
+		if cur.fetchone() is not None:
 			cur.execute("SELECT password FROM user WHERE username = %s;", [username_form]) # FETCH THE PASSWORD
-			mysql.connection.commit()
 			for row in cur.fetchall():
-				if sha256_crypt.verify(password_form, row[0]):
+				if sha256_crypt.verify(password_form, row['password']):
 					session['username'] = request.form['username']
 					cur.close()
 					return redirect(url_for('index'))
@@ -70,7 +71,7 @@ def register():
 		password = userDetails['password']
 		confirm_password = userDetails['confirm_password']
 
-		cur = mysql.connection.cursor()
+		cur = myApp.cursor()
 		cur.execute("SELECT * FROM user WHERE username = %s", [username])
 		
 		#error handling
@@ -93,7 +94,7 @@ def register():
 
 		# if no errors, add to database
 		cur.execute("INSERT INTO user(email, username, password) VALUES(%s, %s, %s)", [email, username, sha256_crypt.encrypt(password)])
-		mysql.connection.commit()
+		myApp.commit()
 		cur.close() 
 		flash('Congrats! You are now a registered hacker.')
 		return redirect(url_for('login'))
@@ -116,7 +117,7 @@ def prefs():
 	username = escape(session['username'])
 
 	# Render profile page if form was already filled out
-	cur = mysql.connection.cursor()
+	cur = myApp.cursor()
 	cur.execute("SELECT userID FROM user WHERE username=%s", [username])
 	userID = cur.fetchone()[0]
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
@@ -141,7 +142,7 @@ def prefs():
 		hardware = request.form.getlist('hardware[]')
 
 		
-		cur = mysql.connection.cursor()
+		cur = myApp.cursor()
 		cur.execute("SELECT userID FROM user WHERE username=%s", [username])
 		userID = cur.fetchone()[0]
 
@@ -182,16 +183,16 @@ def prefs():
 
 		if projIdea_form is not None:
 			cur.execute("UPDATE user SET projIdea=%s WHERE username=%s", [projIdea_form, username]) 
-			mysql.connection.commit()
+			myApp.commit()
 
 		# radio options
 		if exper_form is not None:
 			cur.execute("UPDATE user SET exper=%s WHERE username=%s", [exper_form, username]) 
-			mysql.connection.commit()
+			myApp.commit()
 
 		if compLevel_form is not None:
 			cur.execute("UPDATE user SET comp=%s WHERE username=%s", [compLevel_form, username]) 
-			mysql.connection.commit()
+			myApp.commit()
 
 
 		# links
@@ -202,7 +203,7 @@ def prefs():
 				isError = True
 			else:
 				cur.execute("UPDATE user SET gitLink=%s WHERE username=%s", [gitLink_form, username]) 
-				mysql.connection.commit()
+				myApp.commit()
 
 		if resume_form is not None:
 			cur.execute("SELECT * FROM user WHERE resume=%s", [resume_form])
@@ -211,7 +212,7 @@ def prefs():
 				isError = True
 			else:
 				cur.execute("UPDATE user SET resume=%s WHERE username=%s", [resume_form, username]) 
-				mysql.connection.commit()
+				myApp.commit()
 
 
 		# if error(s), render template early
@@ -227,32 +228,32 @@ def prefs():
 @app.route('/profile', defaults={'username': None})
 @app.route('/profile/<username>')
 def profile(username):
-	cur = mysql.connection.cursor()
+	cur = myApp.cursor()
 	profile=True # if profile was filled out
-	username_session = escape(session['username'])
+	username_session = session['username']
 
 	if username is None:
-		username = escape(session['username'])
+		username = session['username']
 
 	# use select statements, send all vars to template
 
 	# cols in user table (one to one relationships)
 	cur.execute("SELECT userID, projIdea, exper, comp, gitLink, resume, email FROM user WHERE username=%s", [username])
 	row = cur.fetchone()
-	userID = row[0] # need for many-to-many relationships
-	projIdea = row[1] # project idea
-	exper = row[2] # experience level
-	comp = row[3] # competition level
-	gitLink = row[4] # github link
-	resume = row[5] # resume link
-	email = row[6] # email
+	userID = row['userID'] # need for many-to-many relationships
+	projIdea = row['projIdea'] # project idea
+	exper = row['exper'] # experience level
+	comp = row['comp'] # competition level
+	gitLink = row['gitLink'] # github link
+	resume = row['resume'] # resume link
+	email = row['email'] # email
 	
 	
 	# hackathon
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
-	hID = cur.fetchone()[0]
+	hID = cur.fetchone()['hackathonID']
 	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
-	hackathon = cur.fetchone()[0]
+	hackathon = cur.fetchone()['hackathon']
 
 	# multiselect items: have access to IDs. must select ID, then use it to find name of item in its own table
 
@@ -260,9 +261,9 @@ def profile(username):
 	cur.execute("SELECT * FROM usertotech WHERE userID=%s", [userID])
 	techList = []
 	for row in cur.fetchall(): # loop through rows in usertotech
-		techID = row[1]
+		techID = row['techID']
 		cur.execute("SELECT tech FROM tech WHERE techID=%s", [techID])
-		tech = cur.fetchone()[0]
+		tech = cur.fetchone()['tech']
 		techList.append(tech)
 	if len(techList) == 0:
 		techList = None
@@ -273,9 +274,9 @@ def profile(username):
 	cur.execute("SELECT * FROM usertointerests WHERE userID=%s", [userID])
 	intList = []
 	for row in cur.fetchall(): # loop through rows in usertotech
-		intID = row[1]
+		intID = row['intID']
 		cur.execute("SELECT interest FROM interests WHERE intID=%s", [intID])
-		interest = cur.fetchone()[0]
+		interest = cur.fetchone()['interest']
 		intList.append(interest)
 	if len(intList) == 0:
 		intList = None
@@ -284,9 +285,9 @@ def profile(username):
 	cur.execute("SELECT * FROM usertolang WHERE userID=%s", [userID])
 	langList = []
 	for row in cur.fetchall(): # loop through rows in usertotech
-		langID = row[1]
+		langID = row['langID']
 		cur.execute("SELECT lang FROM langs WHERE langID=%s", [langID])
-		lang = cur.fetchone()[0]
+		lang = cur.fetchone()['lang']
 		langList.append(lang)
 	if len(langList) == 0:
 		langList = None
@@ -295,9 +296,9 @@ def profile(username):
 	cur.execute("SELECT * FROM usertohw WHERE userID=%s", [userID])
 	hwList = []
 	for row in cur.fetchall(): # loop through rows in usertotech
-		hwID = row[1]
+		hwID = row['hwID']
 		cur.execute("SELECT hw FROM hw WHERE hwID=%s", [hwID])
-		hw = cur.fetchone()[0]
+		hw = cur.fetchone()['hw']
 		hwList.append(hw)
 	if len(hwList) == 0:
 		hwList = None
@@ -335,7 +336,7 @@ def update():
 		hardware = request.form.getlist('hardware[]')
 
 		
-		cur = mysql.connection.cursor()
+		cur = myApp.cursor()
 		cur.execute("SELECT userID FROM user WHERE username=%s", [username])
 		userID = cur.fetchone()[0]
 
@@ -355,17 +356,18 @@ def matches():
 	matches=None
 	numResults = 0
 	currID = None
-	username = escape(session['username'])
+	results=None
+	username = session['username']
 	profile = True #if profile was filled out
-	cur = mysql.connection.cursor()
+	cur = myApp.cursor()
 
 	# userID
 	cur.execute("SELECT userID FROM user WHERE username=%s", [username])
-	userID = cur.fetchone()[0] 
+	userID = cur.fetchone()['userID'] 
 
 	# hackathon
 	cur.execute("SELECT hackathonID FROM usertohackathon WHERE userID=%s", [userID])
-	hID = cur.fetchone()
+	hID = cur.fetchone()['hackathonID']
 
 	if hID is None: # return early if no profile
 		return render_template('matches.html', username=username, message=["Oops! Looks like you haven't specified your preferences yet."])
@@ -373,7 +375,7 @@ def matches():
 	# Generating matches
 
 	cur.execute("SELECT hackathon FROM hackathons WHERE hackathonID=%s", [hID])
-	hackathon = cur.fetchone()[0]
+	hackathon = cur.fetchone()['hackathon']
 
 	# QUERY ALL OTHER FIELDS FROM CURRENT USER 
 
@@ -381,20 +383,20 @@ def matches():
 	cur.execute("SELECT * FROM usertotech WHERE userID=%s", [userID])
 	techList = []
 	for row in cur.fetchall(): # loop through rows in usertotech
-		techID = row[1]
+		techID = row['techID']
 		cur.execute("SELECT tech FROM tech WHERE techID=%s", [techID])
-		tech = cur.fetchone()[0]
+		tech = cur.fetchone()['tech']
 		techList.append(tech)
 	if len(techList) == 0:
 		techList = None
-
+		
 	# interests
 	cur.execute("SELECT * FROM usertointerests WHERE userID=%s", [userID])
 	intList = []
 	for row in cur.fetchall(): # loop through rows in usertotech
-		intID = row[1]
+		intID = row['intID']
 		cur.execute("SELECT interest FROM interests WHERE intID=%s", [intID])
-		interest = cur.fetchone()[0]
+		interest = cur.fetchone()['interest']
 		intList.append(interest)
 	if len(intList) == 0:
 		intList = None
@@ -403,9 +405,9 @@ def matches():
 	cur.execute("SELECT * FROM usertolang WHERE userID=%s", [userID])
 	langList = []
 	for row in cur.fetchall(): # loop through rows in usertotech
-		langID = row[1]
+		langID = row['langID']
 		cur.execute("SELECT lang FROM langs WHERE langID=%s", [langID])
-		lang = cur.fetchone()[0]
+		lang = cur.fetchone()['lang']
 		langList.append(lang)
 	if len(langList) == 0:
 		langList = None
@@ -414,9 +416,9 @@ def matches():
 	cur.execute("SELECT * FROM usertohw WHERE userID=%s", [userID])
 	hwList = []
 	for row in cur.fetchall(): # loop through rows in usertotech
-		hwID = row[1]
+		hwID = row['hwID']
 		cur.execute("SELECT hw FROM hw WHERE hwID=%s", [hwID])
-		hw = cur.fetchone()[0]
+		hw = cur.fetchone()['hw']
 		hwList.append(hw)
 	if len(hwList) == 0:
 		hwList = None
@@ -424,20 +426,22 @@ def matches():
 	# exper + comp level
 	cur.execute("SELECT exper, comp FROM user WHERE userID=%s", [userID])
 	r = cur.fetchone()
-	exper = r[0]
-	comp = r[1]
+	exper = r['exper']
+	comp = r['comp']
 
 	# select users at the same hackathon
 	
-	match_tech = []
-	match_langs = []
-	match_ints = []
-	match_hw = []
-
+	# set up dictionaries to keep track of matches per user by category
 	techMatches = dict()
 	langMatches = dict()
 	intMatches = dict()
 	hwMatches = dict()
+	
+	# values
+	match_tech = []
+	match_langs = []
+	match_ints = []
+	match_hw = []
 
 	mydict = dict()
 	numRows = cur.execute("SELECT * FROM user WHERE userID !=%s AND userID IN (SELECT userID FROM usertohackathon WHERE hackathonID=%s)", [userID, hID]) 
@@ -445,13 +449,13 @@ def matches():
 		matches = cur.fetchall()
 		l = []
 		for row in matches:
-			currID = row[0]
-			user_name = row[2]
+			currID = row['userID']
+			user_name = row['username']
 
 			# account for experience + comp level 
 				
-			exper_match = row[6] # exper = col 6
-			comp_match = row[5] # comp = col 5
+			exper_match = row['exper'] # exper = col 6
+			comp_match = row['comp'] # comp = col 5
 
 			if exper == exper_match:
 				l.insert(0, exper)
@@ -467,8 +471,8 @@ def matches():
 				ints = cur.fetchall()
 				for row in ints:
 					# fetch string from db using id
-					cur.execute("SELECT interest FROM interests WHERE intID=%s", [row[1]])
-					item = cur.fetchone()[0]
+					cur.execute("SELECT interest FROM interests WHERE intID=%s", [row['intID']])
+					item = cur.fetchone()['interest']
 					if item in intList:
 						cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
 						l.append(item)
@@ -478,8 +482,8 @@ def matches():
 				cur.execute("SELECT * FROM usertotech WHERE userID=%s",[currID])
 				tech = cur.fetchall()
 				for row in tech:
-					cur.execute("SELECT tech FROM tech WHERE techID=%s", [row[1]])
-					item = cur.fetchone()[0]
+					cur.execute("SELECT tech FROM tech WHERE techID=%s", [row['techID']])
+					item = cur.fetchone()['tech']
 					if item in techList:
 						cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
 						l.append(item)
@@ -489,8 +493,8 @@ def matches():
 				cur.execute("SELECT * FROM usertolang WHERE userID=%s",[currID])
 				langs = cur.fetchall()
 				for row in langs:
-					cur.execute("SELECT lang FROM langs WHERE langID=%s", [row[1]])
-					item = cur.fetchone()[0]
+					cur.execute("SELECT lang FROM langs WHERE langID=%s", [row['langID']])
+					item = cur.fetchone()['lang']
 					if item in langList:
 						cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
 						l.append(item)
@@ -500,8 +504,8 @@ def matches():
 				cur.execute("SELECT * FROM usertohw WHERE userID=%s",[currID])
 				hw = cur.fetchall()
 				for row in hw:
-					cur.execute("SELECT hw FROM hw WHERE hwID=%s", [row[1]])
-					item = cur.fetchone()[0]
+					cur.execute("SELECT hw FROM hw WHERE hwID=%s", [row['hwID']])
+					item = cur.fetchone()['hw']
 					if item in hwList:
 						cur.execute("UPDATE user SET numMatches = numMatches + 1 WHERE userID=%s", [currID]) # update numMatches
 						l.append(item)
@@ -532,7 +536,6 @@ def matches():
 				hwMatches[user_name] = match_hw
 				match_hw = [] 
 
-
 		# make results dictionary - will display this in html
 			# key: username
 			# value: list of matching attributes
@@ -545,16 +548,11 @@ def matches():
 	else:
 		message = ["Sorry, there are no other Team Builders at your hackathon.","Please check your hackathon's schedule for a team building event!"]
 
-	dict1=None
-	dict2=None
-
 	if request.method == 'POST':
 
 		dict1 = collections.OrderedDict()
-		#dict2 = collections.OrderedDict()
-
-		resFilter = request.form.get('resFilter')
-		# filters: tech, interests, languages, hw, exper level, comp
+		resFilter = request.form.get('resFilter') # filters: tech, interests, languages, hw, exper level, comp
+		
 		if resFilter == 'tech':
 			for k in sorted(techMatches, key=lambda k: len(techMatches[k]), reverse=True):
 				dict1[k] = techMatches[k]
@@ -567,7 +565,6 @@ def matches():
 		
 		elif resFilter == 'lang':
 			for k in sorted(langMatches, key=lambda k: len(langMatches[k]), reverse=True):
-				#dict1[k] = results[k]
 				dict1[k] = langMatches[k]
 			filterType = 'language'
 		
@@ -594,37 +591,10 @@ def matches():
 					dict1[key] = results[key]
 			filterType = 'competition level'
 
-		#results = dict1 + dict2
-		#dict3 = collections.OrderedDict()
-		#for key in dict1:
-		#	dict3[key] = dict1[key]
-
-		#for key in dict2:
-		#	dict3[key] = dict2[key]
-
+		numResults = len(dict1)
 		results = dict1
-		numResults = len(results)
-		#return render_template('matches.html', results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
-		#return redirect(url_for('matches'))
-	return render_template('matches.html', filterType=filterType, dict1=dict1,results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
-
-
-
-def fetch_list(midTable, item, itemTable, userID):
-	cur = mysql.connection.cursor()
-	sql_command = "SELECT * FROM "+midTable+" WHERE userID=%s"
-	cur.execute(sql_command, [userID])
-	itemList = []
-	for row in cur.fetchall(): # loop through rows in usertotech
-		itemID = row[1]
-		sql_command = "SELECT "+item+" FROM "+itemTable+" WHERE "+item+"=%s"
-		cur.execute(sql_command, [itemID])
-		item = cur.fetchone()[0]
-		itemList.append(item)
-	if len(itemList) == 0:
-		itemList = None
-	return itemList
-
+	
+	return render_template('matches.html', filterType=filterType, results = results, currID=currID,profile=profile, username=username, message=message, matches=matches, numResults=numResults)
 
 app.secret_key = 'MVB79L'
 
