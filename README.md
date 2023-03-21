@@ -1,2 +1,2 @@
 # teambuilder
-Team building webapp for hackathons using Flask + mySQL
+Team building webapp for hackathons using Python, Flask + mySQL
